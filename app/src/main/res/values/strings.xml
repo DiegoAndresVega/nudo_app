@@ -1,14 +1,46 @@
 <resources>
     <string name="app_name">Nudo</string>
-    <string name="estado_listo">Listo para grabar</string>
-    <string name="estado_grabando">Grabando… pulsa para parar y enviar</string>
-    <string name="estado_subiendo">Subiendo audio al servidor…</string>
-    <string name="estado_procesando">Procesando en el servidor (%1$s)… puede tardar varios minutos</string>
-    <string name="estado_completado">Notas listas ✅</string>
-    <string name="titulo_transcripcion">Transcripción por hablante</string>
-    <string name="boton_grabar">🎙 Grabar</string>
-    <string name="boton_parar">⏹ Parar y enviar</string>
-    <string name="boton_reintentar">Reintentar</string>
-    <string name="boton_nueva_grabacion">Nueva grabación</string>
-    <string name="permiso_microfono_denegado">Sin permiso de micrófono no se puede grabar</string>
+
+    <!-- Historial -->
+    <string name="titulo_conversaciones">Conversaciones</string>
+    <string name="vacio_titulo">Aún no hay nudos.</string>
+    <string name="vacio_subtitulo">Graba tu primera conversación.</string>
+    <string name="accion_grabar">grabar</string>
+    <string name="desc_grabar">Grabar una conversación</string>
+    <string name="sin_titulo">Sin título</string>
+
+    <!-- Estados de una conversación -->
+    <string name="estado_anudando">anudando…</string>
+    <string name="estado_atada">atada</string>
+    <string name="estado_fallo">no se pudo atar</string>
+    <string name="estado_sin_subir">sin subir · reintentar</string>
+
+    <!-- Grabación -->
+    <string name="pildora_grabando">● grabando</string>
+    <string name="accion_parar">parar y atar el nudo</string>
+    <string name="desc_parar">Parar y atar el nudo</string>
+    <string name="subiendo_titulo">Atando el nudo…</string>
+    <string name="subiendo_subtitulo">Subiendo la grabación a tu servidor.</string>
+    <string name="error_grabacion">No se pudo grabar: %1$s</string>
+
+    <!-- Detalle -->
+    <string name="desc_atras">Volver al historial</string>
+    <string name="detalle_anudando">Anudando… El servidor está transcribiendo. Puedes cerrar la app.</string>
+    <string name="detalle_error">No se pudo atar. %1$s</string>
+    <string name="hilando_sufijo">" · hilando…"</string>
+
+    <!-- Tipos de análisis (las claves de la API van aparte, en código) -->
+    <string name="tipo_resumen">Resumen</string>
+    <string name="tipo_transcripcion">Transcripción</string>
+    <string name="tipo_esquema">Esquema</string>
+    <string name="tipo_notas">Notas</string>
+    <string name="tipo_acciones">Acciones</string>
+    <string name="tipo_preguntas">Preguntas</string>
+    <string name="tipo_objetivos">Objetivos</string>
+
+    <!-- Avisos -->
+    <string name="aviso_sin_conexion">Sin conexión. La grabación queda en el móvil; toca «reintentar» cuando vuelva la red.</string>
+    <string name="aviso_lista_sin_conexion">Sin conexión. Mostrando lo último guardado.</string>
+    <string name="aviso_hilado_fallido">No se pudo hilar el análisis. Reintenta en un momento.</string>
+    <string name="permiso_microfono_denegado">Nudo necesita el micrófono para grabar. Actívalo en Ajustes.</string>
 </resources>

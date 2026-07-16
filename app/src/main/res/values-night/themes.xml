@@ -8,20 +8,7 @@
         <item name="colorOnSurfaceVariant">@color/nudo_texto_suave</item>
         <item name="colorOutline">@color/nudo_linea</item>
         <item name="android:statusBarColor">@color/nudo_fondo</item>
-        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:navigationBarColor">@color/nudo_fondo</item>
-    </style>
-
-    <!-- Titulares y títulos de conversación: la serif de la casa -->
-    <style name="Nudo.Titular" parent="">
-        <item name="android:fontFamily">@font/lora</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">@color/nudo_texto</item>
-    </style>
-
-    <!-- Lo que viene de la máquina: tiempos, hablantes, estados -->
-    <style name="Nudo.Maquina" parent="">
-        <item name="android:fontFamily">monospace</item>
-        <item name="android:textColor">@color/nudo_texto_suave</item>
     </style>
 </resources>

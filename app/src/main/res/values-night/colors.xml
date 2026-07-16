@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Modo oscuro: tinta y lino invertidos; el texto sobre el hilo es tinta, no blanco -->
+<resources>
+    <color name="nudo_hilo">#E2543F</color>
+    <color name="nudo_sobre_hilo">#12151D</color>
+    <color name="nudo_fondo">#12151D</color>
+    <color name="nudo_superficie">#1A1E2A</color>
+    <color name="nudo_texto">#EDEAE3</color>
+    <color name="nudo_texto_suave">#9BA0AE</color>
+    <color name="nudo_linea">#2A2F3D</color>
+    <color name="nudo_atada">#6FAF84</color>
+    <color name="nudo_anudando">#D3A45B</color>
+
+    <color name="nudo_hilo_tenue">#1FE2543F</color>
+    <color name="nudo_atada_tenue">#266FAF84</color>
+    <color name="nudo_anudando_tenue">#26D3A45B</color>
+</resources>

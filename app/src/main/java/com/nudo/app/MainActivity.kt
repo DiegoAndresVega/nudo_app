@@ -1,20 +1,38 @@
 package com.nudo.app
 
 import android.Manifest
+import android.animation.ValueAnimator
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
+import android.view.animation.LinearInterpolator
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.nudo.app.databinding.ActivityMainBinding
+import com.nudo.app.ui.AdaptadorHistorial
+import com.nudo.app.util.Fechas
+import java.util.Locale
+
+private const val DURACION_PULSO_MS = 1_200L
+private const val ESCALA_PULSO = 1.3f
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val viewModel: NudoViewModel by viewModels()
+    private val viewModel: HistorialViewModel by viewModels()
+    private var animadorPulso: ValueAnimator? = null
+
+    private val adaptador = AdaptadorHistorial { item ->
+        when (item) {
+            is ItemHistorial.Remoto -> abrirConversacion(item)
+            is ItemHistorial.Pendiente -> viewModel.reintentarPendiente(item.archivo)
+        }
+    }
 
     private val pedirPermisoMicrofono = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -31,18 +49,38 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.botonPrincipal.setOnClickListener { alPulsarBotonPrincipal() }
-        binding.botonReiniciar.setOnClickListener { viewModel.reiniciar() }
+        binding.textoFecha.text = Fechas.hoy()
+        binding.listaConversaciones.layoutManager = LinearLayoutManager(this)
+        binding.listaConversaciones.adapter = adaptador
 
-        viewModel.estado.observe(this) { estado -> pintarEstado(estado) }
+        binding.botonGrabar.setOnClickListener { pedirGrabacion() }
+        binding.botonParar.setOnClickListener { viewModel.detenerYEnviar() }
+
+        viewModel.estadoGrabacion.observe(this) { estado -> pintarEstado(estado) }
+        viewModel.items.observe(this) { items ->
+            adaptador.submitList(items)
+            binding.grupoVacio.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
+        }
+        viewModel.amplitud.observe(this) { amplitud -> binding.vistaOnda.agregar(amplitud) }
+        viewModel.aviso.observe(this) { aviso ->
+            if (aviso != null) {
+                Toast.makeText(this, aviso, Toast.LENGTH_LONG).show()
+                viewModel.consumirAviso()
+            }
+        }
     }
 
-    private fun alPulsarBotonPrincipal() {
-        when (viewModel.estado.value) {
-            is EstadoUi.Inactivo, is EstadoUi.Error -> pedirGrabacion()
-            is EstadoUi.Grabando -> viewModel.detenerYEnviar()
-            else -> Unit
-        }
+    override fun onResume() {
+        super.onResume()
+        viewModel.cargarHistorial()
+    }
+
+    private fun abrirConversacion(item: ItemHistorial.Remoto) {
+        val intent = Intent(this, ConversacionActivity::class.java)
+            .putExtra(ConversacionActivity.EXTRA_ID, item.trabajo.id)
+            .putExtra(ConversacionActivity.EXTRA_TITULO, item.trabajo.titulo)
+            .putExtra(ConversacionActivity.EXTRA_CREADO, item.trabajo.creado)
+        startActivity(intent)
     }
 
     private fun pedirGrabacion() {
@@ -57,43 +95,51 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun pintarEstado(estado: EstadoUi) {
-        binding.indicadorProgreso.visibility =
-            if (estado is EstadoUi.Subiendo || estado is EstadoUi.Procesando) View.VISIBLE else View.GONE
-        binding.botonReiniciar.visibility =
-            if (estado is EstadoUi.Completado || estado is EstadoUi.Error) View.VISIBLE else View.GONE
-        binding.contenedorResultado.visibility =
-            if (estado is EstadoUi.Completado) View.VISIBLE else View.GONE
-        binding.botonPrincipal.isEnabled =
-            estado is EstadoUi.Inactivo || estado is EstadoUi.Grabando || estado is EstadoUi.Error
+    private fun pintarEstado(estado: EstadoGrabacion) {
+        binding.grupoHistorial.visibility =
+            if (estado is EstadoGrabacion.Inactiva) View.VISIBLE else View.GONE
+        binding.grupoGrabacion.visibility =
+            if (estado is EstadoGrabacion.Grabando) View.VISIBLE else View.GONE
+        binding.grupoSubiendo.visibility =
+            if (estado is EstadoGrabacion.Subiendo) View.VISIBLE else View.GONE
 
-        when (estado) {
-            is EstadoUi.Inactivo -> {
-                binding.textoEstado.setText(R.string.estado_listo)
-                binding.botonPrincipal.setText(R.string.boton_grabar)
-            }
-            is EstadoUi.Grabando -> {
-                binding.textoEstado.setText(R.string.estado_grabando)
-                binding.botonPrincipal.setText(R.string.boton_parar)
-            }
-            is EstadoUi.Subiendo -> {
-                binding.textoEstado.setText(R.string.estado_subiendo)
-                binding.botonPrincipal.setText(R.string.boton_grabar)
-            }
-            is EstadoUi.Procesando -> {
-                binding.textoEstado.text = getString(R.string.estado_procesando, estado.estadoServidor)
-                binding.botonPrincipal.setText(R.string.boton_grabar)
-            }
-            is EstadoUi.Completado -> {
-                binding.textoEstado.setText(R.string.estado_completado)
-                binding.textoNotas.text = estado.notas
-                binding.textoHablantes.text = estado.hablantes
-                binding.botonPrincipal.setText(R.string.boton_grabar)
-            }
-            is EstadoUi.Error -> {
-                binding.textoEstado.text = estado.mensaje
-                binding.botonPrincipal.setText(R.string.boton_reintentar)
-            }
+        if (estado is EstadoGrabacion.Grabando) {
+            binding.textoCronometro.text = String.format(
+                Locale.ROOT, "%02d:%02d", estado.segundos / 60, estado.segundos % 60,
+            )
+            arrancarPulso()
+        } else {
+            pararPulso()
+            binding.vistaOnda.limpiar()
         }
+    }
+
+    /** El botón late mientras graba: un anillo que se suelta cada 1,2 s. */
+    private fun arrancarPulso() {
+        if (animadorPulso != null) return
+        animadorPulso = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = DURACION_PULSO_MS
+            repeatCount = ValueAnimator.INFINITE
+            interpolator = LinearInterpolator()
+            addUpdateListener { animador ->
+                val progreso = animador.animatedValue as Float
+                val escala = 1f + (ESCALA_PULSO - 1f) * progreso
+                binding.anilloPulso.scaleX = escala
+                binding.anilloPulso.scaleY = escala
+                binding.anilloPulso.alpha = 1f - progreso
+            }
+            start()
+        }
+    }
+
+    private fun pararPulso() {
+        animadorPulso?.cancel()
+        animadorPulso = null
+        binding.anilloPulso.alpha = 0f
+    }
+
+    override fun onDestroy() {
+        pararPulso()
+        super.onDestroy()
     }
 }

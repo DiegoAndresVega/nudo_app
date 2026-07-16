@@ -33,6 +33,14 @@ class GrabadoraAudio {
         grabadora = nueva
     }
 
+    /** Amplitud máxima desde la última llamada (0..32767); 0 si no se está grabando. */
+    fun amplitudMaxima(): Int =
+        try {
+            grabadora?.maxAmplitude ?: 0
+        } catch (_: Exception) {
+            0
+        }
+
     fun detener() {
         grabadora?.apply {
             stop()

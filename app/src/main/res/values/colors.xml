@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tokens de marca. Fuente de verdad: ~/VSC/nudo/marca/nudo-marca.html (sección 06) -->
+<resources>
+    <color name="nudo_hilo">#C63D2F</color>
+    <color name="nudo_sobre_hilo">#FFFFFF</color>
+    <color name="nudo_fondo">#F3F1EC</color>
+    <color name="nudo_superficie">#FBFAF6</color>
+    <color name="nudo_texto">#1C2233</color>
+    <color name="nudo_texto_suave">#5C6172</color>
+    <color name="nudo_linea">#E0DCD2</color>
+    <color name="nudo_atada">#3D7A50</color>
+    <color name="nudo_anudando">#8F6325</color>
+
+    <color name="nudo_hilo_tenue">#17C63D2F</color>
+    <color name="nudo_atada_tenue">#1F3D7A50</color>
+    <color name="nudo_anudando_tenue">#218F6325</color>
+</resources>

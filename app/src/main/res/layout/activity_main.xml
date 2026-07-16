@@ -1,102 +1,222 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp">
+    android:background="?android:colorBackground">
 
-    <TextView
-        android:id="@+id/titulo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:textAppearance="?attr/textAppearanceHeadlineMedium"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <!-- ============ HISTORIAL ============ -->
+    <LinearLayout
+        android:id="@+id/grupoHistorial"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="20dp">
 
-    <TextView
-        android:id="@+id/textoEstado"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/estado_listo"
-        android:textAppearance="?attr/textAppearanceBodyLarge"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/titulo" />
+        <TextView
+            android:id="@+id/textoFecha"
+            style="@style/Nudo.Maquina"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:letterSpacing="0.06"
+            android:textAllCaps="true"
+            android:textSize="12sp"
+            tools:text="jueves, 16 de julio" />
 
-    <com.google.android.material.progressindicator.LinearProgressIndicator
-        android:id="@+id/indicadorProgreso"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:indeterminate="true"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textoEstado" />
+        <TextView
+            android:id="@+id/tituloPantalla"
+            style="@style/Nudo.Titular"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="@string/titulo_conversaciones"
+            android:textSize="26sp" />
 
-    <ScrollView
-        android:id="@+id/contenedorResultado"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/botonPrincipal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/indicadorProgreso">
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="14dp"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/listaConversaciones"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingBottom="8dp" />
+
+            <LinearLayout
+                android:id="@+id/grupoVacio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:alpha="0.6"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_nudo" />
+
+                <TextView
+                    style="@style/Nudo.Titular"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="@string/vacio_titulo"
+                    android:textSize="19sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/vacio_subtitulo"
+                    android:textColor="@color/nudo_texto_suave"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="10dp"
+            android:paddingBottom="6dp">
+
+            <Button
+                android:id="@+id/botonGrabar"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:background="@drawable/fondo_boton_grabar"
+                android:contentDescription="@string/desc_grabar"
+                android:stateListAnimator="@null"
+                android:text="●"
+                android:textColor="@color/nudo_sobre_hilo"
+                android:textSize="22sp" />
 
             <TextView
-                android:id="@+id/textoNotas"
-                android:layout_width="match_parent"
+                style="@style/Nudo.Maquina"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textIsSelectable="true" />
-
-            <TextView
-                android:id="@+id/tituloHablantes"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="@string/titulo_transcripcion"
-                android:textAppearance="?attr/textAppearanceTitleMedium" />
-
-            <TextView
-                android:id="@+id/textoHablantes"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textAppearance="?attr/textAppearanceBodySmall"
-                android:textIsSelectable="true" />
+                android:layout_marginTop="6dp"
+                android:text="@string/accion_grabar"
+                android:textSize="12sp" />
         </LinearLayout>
-    </ScrollView>
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/botonReiniciar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="@string/boton_nueva_grabacion"
-        android:visibility="gone"
-        style="@style/Widget.Material3.Button.TonalButton"
-        app:layout_constraintBottom_toTopOf="@id/botonPrincipal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+    <!-- ============ GRABANDO ============ -->
+    <LinearLayout
+        android:id="@+id/grupoGrabacion"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:visibility="gone">
 
-    <Button
-        android:id="@+id/botonPrincipal"
-        android:layout_width="0dp"
-        android:layout_height="64dp"
-        android:text="@string/boton_grabar"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        <TextView
+            android:id="@+id/pildoraGrabando"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="44dp"
+            android:background="@drawable/fondo_pildora"
+            android:backgroundTint="@color/nudo_hilo_tenue"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="6dp"
+            android:text="@string/pildora_grabando"
+            android:textColor="@color/nudo_hilo"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <com.nudo.app.ui.OndaView
+            android:id="@+id/vistaOnda"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginTop="52dp" />
+
+        <TextView
+            android:id="@+id/textoCronometro"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:fontFamily="monospace"
+            android:text="00:00"
+            android:textColor="@color/nudo_texto"
+            android:textSize="36sp" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <FrameLayout
+            android:layout_width="104dp"
+            android:layout_height="104dp">
+
+            <View
+                android:id="@+id/anilloPulso"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_gravity="center"
+                android:background="@drawable/anillo_pulso" />
+
+            <Button
+                android:id="@+id/botonParar"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_gravity="center"
+                android:background="@drawable/fondo_boton_grabar"
+                android:contentDescription="@string/desc_parar"
+                android:stateListAnimator="@null"
+                android:text="⏹"
+                android:textColor="@color/nudo_sobre_hilo"
+                android:textSize="22sp" />
+        </FrameLayout>
+
+        <TextView
+            style="@style/Nudo.Maquina"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="22dp"
+            android:text="@string/accion_parar"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- ============ SUBIENDO ============ -->
+    <LinearLayout
+        android:id="@+id/grupoSubiendo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminateTint="@color/nudo_hilo" />
+
+        <TextView
+            style="@style/Nudo.Titular"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="@string/subiendo_titulo"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center"
+            android:text="@string/subiendo_subtitulo"
+            android:textColor="@color/nudo_texto_suave"
+            android:textSize="14sp" />
+    </LinearLayout>
+</FrameLayout>
