@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Nudo</string>
+    <string name="estado_listo">Listo para grabar</string>
+    <string name="estado_grabando">Grabando… pulsa para parar y enviar</string>
+    <string name="estado_subiendo">Subiendo audio al servidor…</string>
+    <string name="estado_procesando">Procesando en el servidor (%1$s)… puede tardar varios minutos</string>
+    <string name="estado_completado">Notas listas ✅</string>
+    <string name="titulo_transcripcion">Transcripción por hablante</string>
+    <string name="boton_grabar">🎙 Grabar</string>
+    <string name="boton_parar">⏹ Parar y enviar</string>
+    <string name="boton_reintentar">Reintentar</string>
+    <string name="boton_nueva_grabacion">Nueva grabación</string>
+    <string name="permiso_microfono_denegado">Sin permiso de micrófono no se puede grabar</string>
+</resources>

@@ -1,0 +1,72 @@
+import java.util.Properties
+
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+val propiedadesLocales = Properties().apply {
+    val archivo = rootProject.file("local.properties")
+    if (archivo.exists()) archivo.inputStream().use { load(it) }
+}
+
+android {
+    namespace = "com.nudo.app"
+    compileSdk = 37
+
+    defaultConfig {
+        applicationId = "com.nudo.app"
+        minSdk = 26
+        targetSdk = 37
+        versionCode = 1
+        versionName = "0.1"
+
+        buildConfigField(
+            "String",
+            "NUDO_BASE_URL",
+            "\"${propiedadesLocales.getProperty("NUDO_BASE_URL", "http://31.97.152.142")}\"",
+        )
+        buildConfigField(
+            "String",
+            "NUDO_API_KEY",
+            "\"${propiedadesLocales.getProperty("NUDO_API_KEY", "")}\"",
+        )
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    buildFeatures {
+        viewBinding = true
+        buildConfig = true
+    }
+}
+
+kotlin {
+    jvmToolchain(11)
+}
+
+dependencies {
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.okhttp)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.json)
+}
