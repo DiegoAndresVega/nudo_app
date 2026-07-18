@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.nudo.app.databinding.ActivityMainBinding
 import com.nudo.app.ui.AdaptadorHistorial
 import com.nudo.app.util.Fechas
+import com.nudo.app.util.aplicarInsetsDeBarras
 import java.util.Locale
 
 private const val DURACION_PULSO_MS = 1_200L
@@ -45,9 +47,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.root.aplicarInsetsDeBarras()
 
         binding.textoFecha.text = Fechas.hoy()
         binding.listaConversaciones.layoutManager = LinearLayoutManager(this)

@@ -4,12 +4,14 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.chip.Chip
 import com.nudo.app.databinding.ActivityConversacionBinding
 import com.nudo.app.util.Fechas
 import com.nudo.app.util.Marcado
+import com.nudo.app.util.aplicarInsetsDeBarras
 
 /** Orden de los chips: primero lo que más se usa, como en la identidad. */
 private val TIPOS = listOf(
@@ -35,9 +37,11 @@ class ConversacionActivity : AppCompatActivity() {
     private val chips = mutableMapOf<String, Chip>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         binding = ActivityConversacionBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.root.aplicarInsetsDeBarras()
 
         val id = intent.getStringExtra(EXTRA_ID)
         if (id == null) {
