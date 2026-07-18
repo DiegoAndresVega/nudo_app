@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.chip.Chip
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.nudo.app.databinding.ActivityConversacionBinding
 import com.nudo.app.util.Fechas
 import com.nudo.app.util.Marcado
@@ -69,11 +70,33 @@ class ConversacionActivity : AppCompatActivity() {
                 chipStrokeColor = getColorStateList(R.color.chip_trazo)
                 chipStrokeWidth = resources.displayMetrics.density
                 setTextColor(getColorStateList(R.color.chip_texto))
-                setOnClickListener { viewModel.seleccionar(clave) }
+                setOnClickListener { alPulsarChip(clave) }
             }
             chips[clave] = chip
             binding.grupoChips.addView(chip)
         }
+    }
+
+    /**
+     * La transcripción y lo ya hilado se muestran directos (gratis). Un análisis
+     * que aún no existe se pide a la IA (gasto), así que primero se confirma.
+     */
+    private fun alPulsarChip(clave: String) {
+        if (viewModel.yaGenerada(clave)) {
+            viewModel.seleccionar(clave)
+        } else {
+            confirmarHilado(clave)
+        }
+    }
+
+    private fun confirmarHilado(clave: String) {
+        val etiqueta = getString(TIPOS.first { it.first == clave }.second)
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.confirmar_hilar_titulo, etiqueta))
+            .setMessage(R.string.confirmar_hilar_mensaje)
+            .setNegativeButton(R.string.confirmar_hilar_no, null)
+            .setPositiveButton(R.string.confirmar_hilar_si) { _, _ -> viewModel.seleccionar(clave) }
+            .show()
     }
 
     private fun observar() {
