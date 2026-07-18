@@ -43,4 +43,10 @@
     <string name="aviso_lista_sin_conexion">Sin conexión. Mostrando lo último guardado.</string>
     <string name="aviso_hilado_fallido">No se pudo hilar el análisis. Reintenta en un momento.</string>
     <string name="permiso_microfono_denegado">Nudo necesita el micrófono para grabar. Actívalo en Ajustes.</string>
+
+    <!-- Confirmación al hilar (la IA genera bajo demanda; la transcripción y los hablantes ya están) -->
+    <string name="confirmar_hilar_titulo">¿Hilar %1$s?</string>
+    <string name="confirmar_hilar_mensaje">Esta vista se genera con IA solo cuando la pides. La transcripción y los hablantes ya están listos.</string>
+    <string name="confirmar_hilar_si">Hilar</string>
+    <string name="confirmar_hilar_no">Ahora no</string>
 </resources>
