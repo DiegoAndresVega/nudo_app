@@ -63,6 +63,13 @@ class ConversacionViewModel(aplicacion: Application) : AndroidViewModel(aplicaci
         }
     }
 
+    /**
+     * ¿La vista ya está lista? Si es así, seleccionarla solo cambia de pestaña
+     * (gratis). Si no, [seleccionar] pedirá el análisis a la IA (gasto), así que
+     * la pantalla puede confirmar antes. La transcripción siempre está lista.
+     */
+    fun yaGenerada(tipo: String): Boolean = _vistas.value.orEmpty().containsKey(tipo)
+
     fun seleccionar(tipo: String) {
         if (_hilando.value != null) return
         if (_vistas.value.orEmpty().containsKey(tipo)) {
