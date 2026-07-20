@@ -105,6 +105,16 @@
                 android:layout_marginTop="6dp"
                 android:text="@string/accion_grabar"
                 android:textSize="12sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/botonSubir"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/accion_subir"
+                android:textColor="@color/nudo_texto_suave"
+                android:textSize="13sp" />
         </LinearLayout>
     </LinearLayout>
 

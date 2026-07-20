@@ -1,6 +1,5 @@
 package com.nudo.app
 
-import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -10,20 +9,17 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.nudo.app.databinding.ActivityConversacionBinding
+import com.nudo.app.databinding.DialogoTextoBinding
+import com.nudo.app.red.Trabajo
 import com.nudo.app.util.Fechas
-import com.nudo.app.util.Marcado
+import com.nudo.app.util.TranscripcionEstilo
 import com.nudo.app.util.aplicarInsetsDeBarras
 
-/** Orden de los chips: primero lo que más se usa, como en la identidad. */
-private val TIPOS = listOf(
-    "resumen" to R.string.tipo_resumen,
-    VISTA_TRANSCRIPCION to R.string.tipo_transcripcion,
-    "esquema" to R.string.tipo_esquema,
-    "notas" to R.string.tipo_notas,
-    "acciones" to R.string.tipo_acciones,
-    "preguntas" to R.string.tipo_preguntas,
-    "objetivos" to R.string.tipo_objetivos,
-)
+/** Tope de caracteres del nombre de un hablante (igual que en api/transcripcion.py). */
+private const val MAXIMO_NOMBRE = 40
+
+/** Tope del título de la conversación (igual que en api/trabajos.py). */
+private const val MAXIMO_TITULO = 80
 
 class ConversacionActivity : AppCompatActivity() {
 
@@ -35,7 +31,7 @@ class ConversacionActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityConversacionBinding
     private val viewModel: ConversacionViewModel by viewModels()
-    private val chips = mutableMapOf<String, Chip>()
+    private var creado: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -49,78 +45,20 @@ class ConversacionActivity : AppCompatActivity() {
             finish()
             return
         }
+        creado = intent.getStringExtra(EXTRA_CREADO)
         binding.botonAtras.setOnClickListener { finish() }
-        binding.tituloConversacion.text =
-            intent.getStringExtra(EXTRA_TITULO) ?: getString(R.string.sin_titulo)
-        binding.metaConversacion.text =
-            intent.getStringExtra(EXTRA_CREADO)?.let { Fechas.formatearCreado(it) }.orEmpty()
+        binding.zonaTitulo.setOnClickListener { pedirTitulo() }
+        binding.botonProximamente.setOnClickListener { mostrarProximamente() }
 
-        crearChips()
+        pintarCabecera(intent.getStringExtra(EXTRA_TITULO))
         observar()
         viewModel.cargar(id)
     }
 
-    private fun crearChips() {
-        for ((clave, etiqueta) in TIPOS) {
-            val chip = Chip(this).apply {
-                text = getString(etiqueta)
-                isCheckable = true
-                isCheckedIconVisible = false
-                chipBackgroundColor = getColorStateList(R.color.chip_fondo)
-                chipStrokeColor = getColorStateList(R.color.chip_trazo)
-                chipStrokeWidth = resources.displayMetrics.density
-                setTextColor(getColorStateList(R.color.chip_texto))
-                setOnClickListener { alPulsarChip(clave) }
-            }
-            chips[clave] = chip
-            binding.grupoChips.addView(chip)
-        }
-    }
-
-    /**
-     * La transcripción y lo ya hilado se muestran directos (gratis). Un análisis
-     * que aún no existe se pide a la IA (gasto), así que primero se confirma.
-     */
-    private fun alPulsarChip(clave: String) {
-        if (viewModel.yaGenerada(clave)) {
-            viewModel.seleccionar(clave)
-        } else {
-            confirmarHilado(clave)
-        }
-    }
-
-    private fun confirmarHilado(clave: String) {
-        val etiqueta = getString(TIPOS.first { it.first == clave }.second)
-        MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.confirmar_hilar_titulo, etiqueta))
-            .setMessage(R.string.confirmar_hilar_mensaje)
-            .setNegativeButton(R.string.confirmar_hilar_no, null)
-            .setPositiveButton(R.string.confirmar_hilar_si) { _, _ -> viewModel.seleccionar(clave) }
-            .show()
-    }
-
     private fun observar() {
         viewModel.detalle.observe(this) { trabajo ->
-            if (trabajo == null) return@observe
-            trabajo.titulo?.let { binding.tituloConversacion.text = it }
-            when (trabajo.estado) {
-                "completado" -> mostrarContenido(true)
-                "error" -> {
-                    mostrarContenido(false)
-                    binding.progresoDetalle.visibility = View.GONE
-                    binding.textoEstadoDetalle.text =
-                        getString(R.string.detalle_error, trabajo.error ?: "")
-                }
-                else -> {
-                    mostrarContenido(false)
-                    binding.progresoDetalle.visibility = View.VISIBLE
-                    binding.textoEstadoDetalle.setText(R.string.detalle_anudando)
-                }
-            }
+            if (trabajo != null) pintarTrabajo(trabajo)
         }
-        viewModel.vistaActiva.observe(this) { pintarVista() }
-        viewModel.vistas.observe(this) { pintarVista() }
-        viewModel.hilando.observe(this) { pintarChips() }
         viewModel.aviso.observe(this) { aviso ->
             if (aviso != null) {
                 Toast.makeText(this, aviso, Toast.LENGTH_LONG).show()
@@ -129,37 +67,131 @@ class ConversacionActivity : AppCompatActivity() {
         }
     }
 
+    private fun pintarTrabajo(trabajo: Trabajo) {
+        creado = trabajo.creado ?: creado
+        pintarCabecera(trabajo.titulo)
+        when (trabajo.estado) {
+            "completado" -> {
+                mostrarContenido(true)
+                binding.textoContenido.text =
+                    TranscripcionEstilo.aSpanned(this, trabajo.hablantes.orEmpty())
+                pintarChipsHablantes(trabajo)
+            }
+            "error" -> {
+                mostrarContenido(false)
+                binding.progresoDetalle.visibility = View.GONE
+                binding.textoEstadoDetalle.text =
+                    getString(R.string.detalle_error, trabajo.error ?: "")
+            }
+            else -> {
+                mostrarContenido(false)
+                binding.progresoDetalle.visibility = View.VISIBLE
+                binding.textoEstadoDetalle.setText(R.string.detalle_anudando)
+            }
+        }
+    }
+
+    /** Sin IA no hay título automático: si el usuario no ha puesto uno, se muestra la fecha. */
+    private fun pintarCabecera(titulo: String?) {
+        val fecha = creado?.let { Fechas.formatearCreado(it) }.orEmpty()
+        binding.tituloConversacion.text = titulo ?: fecha.ifEmpty { getString(R.string.sin_titulo) }
+        binding.metaConversacion.text = if (titulo == null) {
+            getString(R.string.meta_toca_para_titular)
+        } else {
+            getString(R.string.meta_con_fecha, fecha)
+        }
+    }
+
     private fun mostrarContenido(visible: Boolean) {
         binding.contenedorContenido.visibility = if (visible) View.VISIBLE else View.GONE
-        binding.grupoChips.visibility = if (visible) View.VISIBLE else View.GONE
         binding.grupoEstadoDetalle.visibility = if (visible) View.GONE else View.VISIBLE
     }
 
-    private fun pintarVista() {
-        pintarChips()
-        val activa = viewModel.vistaActiva.value ?: return
-        val contenido = viewModel.vistas.value.orEmpty()[activa] ?: return
-        if (activa == VISTA_TRANSCRIPCION) {
-            binding.textoContenido.typeface = Typeface.MONOSPACE
-            binding.textoContenido.textSize = 13f
-            binding.textoContenido.text = contenido
-        } else {
-            binding.textoContenido.typeface = Typeface.DEFAULT
-            binding.textoContenido.textSize = 15f
-            binding.textoContenido.text = Marcado.aSpanned(contenido)
+    // ---- Hablantes ----
+
+    private fun pintarChipsHablantes(trabajo: Trabajo) {
+        binding.grupoHablantes.visibility =
+            if (trabajo.etiquetas.isEmpty()) View.GONE else View.VISIBLE
+        binding.grupoChipsHablantes.removeAllViews()
+
+        for ((indice, etiqueta) in trabajo.etiquetas.withIndex()) {
+            val nombre = trabajo.nombres[etiqueta] ?: etiqueta
+            val chip = Chip(this).apply {
+                text = nombre
+                isCheckable = false
+                isCheckedIconVisible = false
+                chipBackgroundColor = getColorStateList(R.color.chip_fondo)
+                chipStrokeColor = getColorStateList(R.color.chip_trazo)
+                chipStrokeWidth = resources.displayMetrics.density
+                setTextColor(TranscripcionEstilo.colorDeHablante(this@ConversacionActivity, indice))
+                contentDescription = getString(R.string.desc_renombrar_hablante, nombre)
+                setOnClickListener { pedirNombreHablante(etiqueta, nombre) }
+            }
+            binding.grupoChipsHablantes.addView(chip)
         }
-        binding.contenedorContenido.scrollTo(0, 0)
     }
 
-    private fun pintarChips() {
-        val activa = viewModel.vistaActiva.value
-        val hilando = viewModel.hilando.value
-        for ((clave, chip) in chips) {
-            chip.isChecked = clave == activa
-            val etiqueta = getString(TIPOS.first { it.first == clave }.second)
-            chip.text =
-                if (clave == hilando) etiqueta + getString(R.string.hilando_sufijo) else etiqueta
-            chip.isEnabled = hilando == null
-        }
+    private fun pedirNombreHablante(etiqueta: String, nombreActual: String) {
+        val valorInicial = if (nombreActual == etiqueta) "" else nombreActual
+        pedirTexto(
+            titulo = getString(R.string.renombrar_titulo, etiqueta),
+            ayuda = getString(R.string.renombrar_ayuda),
+            pista = getString(R.string.renombrar_pista),
+            valorInicial = valorInicial,
+            maximo = MAXIMO_NOMBRE,
+        ) { nuevo -> viewModel.renombrarHablante(etiqueta, nuevo) }
+    }
+
+    // ---- Título ----
+
+    private fun pedirTitulo() {
+        val actual = viewModel.detalle.value?.titulo.orEmpty()
+        pedirTexto(
+            titulo = getString(R.string.titulo_dialogo),
+            ayuda = null,
+            pista = getString(R.string.titulo_pista),
+            valorInicial = actual,
+            maximo = MAXIMO_TITULO,
+        ) { nuevo -> viewModel.cambiarTitulo(nuevo) }
+    }
+
+    // ---- Próximamente ----
+
+    private fun mostrarProximamente() {
+        val funciones = resources.getStringArray(R.array.proximamente_funciones)
+            .joinToString("\n") { "•  $it" }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.proximamente_titulo)
+            .setMessage(getString(R.string.proximamente_mensaje, funciones))
+            .setPositiveButton(R.string.proximamente_cerrar, null)
+            .show()
+    }
+
+    // ---- Diálogo de texto reutilizable ----
+
+    private fun pedirTexto(
+        titulo: String,
+        ayuda: String?,
+        pista: String,
+        valorInicial: String,
+        maximo: Int,
+        alConfirmar: (String) -> Unit,
+    ) {
+        val dialogo = DialogoTextoBinding.inflate(layoutInflater)
+        dialogo.contenedorCampo.hint = pista
+        dialogo.contenedorCampo.counterMaxLength = maximo
+        dialogo.contenedorCampo.isCounterEnabled = true
+        dialogo.campoTexto.setText(valorInicial)
+        dialogo.campoTexto.setSelection(valorInicial.length)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(titulo)
+            .apply { if (ayuda != null) setMessage(ayuda) }
+            .setView(dialogo.root)
+            .setNegativeButton(R.string.accion_cancelar, null)
+            .setPositiveButton(R.string.accion_guardar) { _, _ ->
+                alConfirmar(dialogo.campoTexto.text?.toString().orEmpty().take(maximo))
+            }
+            .show()
     }
 }

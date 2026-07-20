@@ -1,11 +1,13 @@
 package com.nudo.app
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.nudo.app.grabacion.GrabadoraAudio
+import com.nudo.app.grabacion.ImportadorAudio
 import com.nudo.app.pendientes.ColaPendientes
 import com.nudo.app.red.ClienteNudo
 import com.nudo.app.red.TrabajoResumen
@@ -96,12 +98,29 @@ class HistorialViewModel(aplicacion: Application) : AndroidViewModel(aplicacion)
         }
         _estadoGrabacion.value = EstadoGrabacion.Subiendo
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                ClienteNudo.subirAudio(archivo)
-                archivo.delete()
-            } catch (_: Exception) {
-                _aviso.postValue(contexto.getString(R.string.aviso_sin_conexion))
+            subir(archivo)
+            _estadoGrabacion.postValue(EstadoGrabacion.Inactiva)
+            cargarHistorial()
+        }
+    }
+
+    /** Un audio que ya estaba en el móvil: se copia a la cola y sigue el mismo camino. */
+    fun importarAudio(uri: Uri) {
+        val contexto = getApplication<Application>()
+        _estadoGrabacion.value = EstadoGrabacion.Subiendo
+        viewModelScope.launch(Dispatchers.IO) {
+            val archivo = try {
+                ImportadorAudio.importar(contexto, uri)
+            } catch (error: ImportadorAudio.FormatoNoSoportado) {
+                _aviso.postValue(contexto.getString(R.string.error_formato, error.extension))
+                _estadoGrabacion.postValue(EstadoGrabacion.Inactiva)
+                return@launch
+            } catch (error: Exception) {
+                _aviso.postValue(contexto.getString(R.string.error_importar, error.message ?: ""))
+                _estadoGrabacion.postValue(EstadoGrabacion.Inactiva)
+                return@launch
             }
+            subir(archivo)
             _estadoGrabacion.postValue(EstadoGrabacion.Inactiva)
             cargarHistorial()
         }
@@ -109,28 +128,33 @@ class HistorialViewModel(aplicacion: Application) : AndroidViewModel(aplicacion)
 
     fun reintentarPendiente(archivo: File) {
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                ClienteNudo.subirAudio(archivo)
-                archivo.delete()
-            } catch (_: Exception) {
-                _aviso.postValue(getApplication<Application>().getString(R.string.aviso_sin_conexion))
-            }
+            subir(archivo)
             cargarHistorial()
         }
     }
+
+    /**
+     * Sube y borra el local solo si el servidor lo aceptó; si no, se queda en la
+     * cola. Los reintentos automáticos al abrir la app van con [avisar] a false:
+     * si no hay red, no tiene sentido soltar un aviso por cada pendiente.
+     */
+    private fun subir(archivo: File, avisar: Boolean = true): Boolean =
+        try {
+            ClienteNudo.subirAudio(archivo)
+            archivo.delete()
+            true
+        } catch (_: Exception) {
+            if (avisar) {
+                _aviso.postValue(getApplication<Application>().getString(R.string.aviso_sin_conexion))
+            }
+            false
+        }
 
     fun cargarHistorial(reintentarPendientes: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) {
             val contexto = getApplication<Application>()
             if (reintentarPendientes) {
-                ColaPendientes.listar(contexto).forEach { archivo ->
-                    try {
-                        ClienteNudo.subirAudio(archivo)
-                        archivo.delete()
-                    } catch (_: Exception) {
-                        // sin red: se queda en la cola
-                    }
-                }
+                ColaPendientes.listar(contexto).forEach { archivo -> subir(archivo, avisar = false) }
             }
             val pendientes = ColaPendientes.listar(contexto).map { ItemHistorial.Pendiente(it) }
             val remotos = try {

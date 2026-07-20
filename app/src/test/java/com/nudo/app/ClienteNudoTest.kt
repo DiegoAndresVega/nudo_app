@@ -18,13 +18,13 @@ class ClienteNudoTest {
     fun `parsearLista devuelve los trabajos con titulo`() {
         val json = """{"trabajos":[
             {"id":"b","estado":"completado","creado":"2026-07-16T10:00:00+00:00","titulo":"Tutoría del TFG"},
-            {"id":"a","estado":"pendiente","creado":"2026-07-16T09:00:00+00:00","titulo":"Sin título"}
+            {"id":"a","estado":"pendiente","creado":"2026-07-16T09:00:00+00:00","titulo":null}
         ]}"""
         val lista = ClienteNudo.parsearLista(json)
         assertEquals(2, lista.size)
         assertEquals("b", lista[0].id)
         assertEquals("Tutoría del TFG", lista[0].titulo)
-        assertEquals("pendiente", lista[1].estado)
+        assertNull("sin IA, un trabajo recién hecho no trae título", lista[1].titulo)
     }
 
     @Test
@@ -34,19 +34,30 @@ class ClienteNudoTest {
         assertEquals("pendiente", trabajo.estado)
         assertNull(trabajo.titulo)
         assertNull(trabajo.hablantes)
-        assertTrue(trabajo.analisis.isEmpty())
+        assertTrue(trabajo.etiquetas.isEmpty())
+        assertTrue(trabajo.nombres.isEmpty())
     }
 
     @Test
-    fun `parsearTrabajo con trabajo completado incluye hablantes y analisis`() {
+    fun `parsearTrabajo completado incluye transcripcion y etiquetas`() {
         val json = """{"id":"abc123","estado":"completado","titulo":"Prueba",
             "hablantes":"[00:00] SPEAKER_00: Hola",
-            "analisis":{"resumen":"## Resumen generado"}}"""
+            "etiquetas":["SPEAKER_00","SPEAKER_01"],
+            "nombres":{}}"""
         val trabajo = ClienteNudo.parsearTrabajo(json)
         assertEquals("completado", trabajo.estado)
-        assertEquals("Prueba", trabajo.titulo)
         assertEquals("[00:00] SPEAKER_00: Hola", trabajo.hablantes)
-        assertEquals("## Resumen generado", trabajo.analisis["resumen"])
+        assertEquals(listOf("SPEAKER_00", "SPEAKER_01"), trabajo.etiquetas)
+    }
+
+    @Test
+    fun `parsearTrabajo recoge los nombres puestos a los hablantes`() {
+        val json = """{"id":"abc123","estado":"completado",
+            "hablantes":"[00:00] Diego: Hola",
+            "etiquetas":["SPEAKER_00"],
+            "nombres":{"SPEAKER_00":"Diego"}}"""
+        val trabajo = ClienteNudo.parsearTrabajo(json)
+        assertEquals(mapOf("SPEAKER_00" to "Diego"), trabajo.nombres)
     }
 
     @Test
@@ -55,11 +66,5 @@ class ClienteNudoTest {
         val trabajo = ClienteNudo.parsearTrabajo(json)
         assertEquals("error", trabajo.estado)
         assertEquals("fallo de prueba", trabajo.error)
-    }
-
-    @Test
-    fun `parsearAnalisis extrae el contenido`() {
-        val json = """{"tipo":"resumen","contenido":"## Resumen\n- punto"}"""
-        assertEquals("## Resumen\n- punto", ClienteNudo.parsearAnalisis(json))
     }
 }

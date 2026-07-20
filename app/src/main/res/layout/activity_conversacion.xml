@@ -8,6 +8,7 @@
     android:orientation="vertical"
     android:padding="20dp">
 
+    <!-- ============ CABECERA ============ -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -23,11 +24,14 @@
             android:src="@drawable/ic_atras" />
 
         <LinearLayout
+            android:id="@+id/zonaTitulo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:background="?attr/selectableItemBackground"
+            android:orientation="vertical"
+            android:paddingVertical="4dp">
 
             <TextView
                 android:id="@+id/tituloConversacion"
@@ -46,19 +50,40 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:textSize="11sp"
-                tools:text="16 jul · 33 min · atada" />
+                tools:text="16 jul · 20:14 · toca para renombrar" />
         </LinearLayout>
     </LinearLayout>
 
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/grupoChips"
+    <!-- ============ HABLANTES ============ -->
+    <LinearLayout
+        android:id="@+id/grupoHablantes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
-        app:chipSpacingVertical="4dp"
-        app:selectionRequired="true"
-        app:singleSelection="true" />
+        android:layout_marginTop="12dp"
+        android:orientation="vertical"
+        android:visibility="gone"
+        tools:visibility="visible">
 
+        <TextView
+            android:id="@+id/etiquetaHablantes"
+            style="@style/Nudo.Maquina"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:letterSpacing="0.06"
+            android:text="@string/hablantes_ayuda"
+            android:textAllCaps="true"
+            android:textSize="10sp" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/grupoChipsHablantes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            app:chipSpacingVertical="2dp"
+            app:singleSelection="false" />
+    </LinearLayout>
+
+    <!-- ============ TRANSCRIPCIÓN ============ -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -81,7 +106,7 @@
                 android:textColor="@color/nudo_texto"
                 android:textIsSelectable="true"
                 android:textSize="15sp"
-                tools:text="Contenido del análisis" />
+                tools:text="00:07  SPEAKER_00  Yo quitaría el estudio de campo." />
         </ScrollView>
 
         <LinearLayout
@@ -111,4 +136,15 @@
                 tools:text="Anudando…" />
         </LinearLayout>
     </FrameLayout>
+
+    <!-- ============ PRÓXIMAMENTE ============ -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/botonProximamente"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/proximamente_boton"
+        android:textColor="@color/nudo_texto_suave"
+        app:strokeColor="@color/nudo_linea" />
 </LinearLayout>

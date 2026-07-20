@@ -2,6 +2,7 @@ package com.nudo.app.ui
 
 import android.content.res.ColorStateList
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -31,9 +32,14 @@ class AdaptadorHistorial(
 
         when (item) {
             is ItemHistorial.Remoto -> {
-                binding.tituloItem.text =
-                    item.trabajo.titulo ?: contexto.getString(R.string.sin_titulo)
-                binding.metaItem.text = Fechas.formatearCreado(item.trabajo.creado)
+                // Sin IA no hay título automático: hasta que el usuario ponga uno,
+                // la conversación se identifica por su fecha.
+                val fecha = Fechas.formatearCreado(item.trabajo.creado)
+                binding.tituloItem.text = item.trabajo.titulo ?: fecha
+                binding.metaItem.text = fecha
+                // Si la fecha ya hace de título, no la repetimos debajo.
+                binding.metaItem.visibility =
+                    if (item.trabajo.titulo == null) View.GONE else View.VISIBLE
                 when (item.trabajo.estado) {
                     "completado" -> pintarPildora(binding, R.string.estado_atada, R.color.nudo_atada, R.color.nudo_atada_tenue)
                     "error" -> pintarPildora(binding, R.string.estado_fallo, R.color.nudo_hilo, R.color.nudo_hilo_tenue)
@@ -41,8 +47,8 @@ class AdaptadorHistorial(
                 }
             }
             is ItemHistorial.Pendiente -> {
-                binding.tituloItem.text = contexto.getString(R.string.sin_titulo)
-                binding.metaItem.text = Fechas.formatearInstante(item.archivo.lastModified())
+                binding.tituloItem.text = Fechas.formatearInstante(item.archivo.lastModified())
+                binding.metaItem.visibility = View.GONE
                 pintarPildora(binding, R.string.estado_sin_subir, R.color.nudo_hilo, R.color.nudo_hilo_tenue)
             }
         }

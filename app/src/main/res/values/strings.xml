@@ -4,8 +4,9 @@
     <!-- Historial -->
     <string name="titulo_conversaciones">Conversaciones</string>
     <string name="vacio_titulo">Aún no hay nudos.</string>
-    <string name="vacio_subtitulo">Graba tu primera conversación.</string>
+    <string name="vacio_subtitulo">Graba tu primera conversación o sube un audio.</string>
     <string name="accion_grabar">grabar</string>
+    <string name="accion_subir">o subir un audio del móvil</string>
     <string name="desc_grabar">Grabar una conversación</string>
     <string name="sin_titulo">Sin título</string>
 
@@ -15,38 +16,57 @@
     <string name="estado_fallo">no se pudo atar</string>
     <string name="estado_sin_subir">sin subir · reintentar</string>
 
-    <!-- Grabación -->
+    <!-- Grabación y subida -->
     <string name="pildora_grabando">● grabando</string>
     <string name="accion_parar">parar y atar el nudo</string>
     <string name="desc_parar">Parar y atar el nudo</string>
     <string name="subiendo_titulo">Atando el nudo…</string>
-    <string name="subiendo_subtitulo">Subiendo la grabación a tu servidor.</string>
+    <string name="subiendo_subtitulo">Subiendo el audio a tu servidor.</string>
     <string name="error_grabacion">No se pudo grabar: %1$s</string>
+    <string name="error_importar">No se pudo leer el audio: %1$s</string>
+    <string name="error_formato">Nudo no entiende los archivos «%1$s». Prueba con mp3, m4a, wav, ogg, opus, aac, flac o webm.</string>
 
     <!-- Detalle -->
     <string name="desc_atras">Volver al historial</string>
-    <string name="detalle_anudando">Anudando… El servidor está transcribiendo. Puedes cerrar la app.</string>
+    <string name="detalle_anudando">Anudando… El servidor está transcribiendo y separando a los hablantes. Puedes cerrar la app.</string>
     <string name="detalle_error">No se pudo atar. %1$s</string>
-    <string name="hilando_sufijo">" · hilando…"</string>
+    <string name="meta_toca_para_titular">toca para ponerle nombre</string>
+    <string name="meta_con_fecha">%1$s · toca para renombrar</string>
 
-    <!-- Tipos de análisis (las claves de la API van aparte, en código) -->
-    <string name="tipo_resumen">Resumen</string>
-    <string name="tipo_transcripcion">Transcripción</string>
-    <string name="tipo_esquema">Esquema</string>
-    <string name="tipo_notas">Notas</string>
-    <string name="tipo_acciones">Acciones</string>
-    <string name="tipo_preguntas">Preguntas</string>
-    <string name="tipo_objetivos">Objetivos</string>
+    <!-- Hablantes -->
+    <string name="hablantes_ayuda">Hablantes · toca uno para nombrarlo</string>
+    <string name="desc_renombrar_hablante">Renombrar a %1$s</string>
+    <string name="renombrar_titulo">¿Quién es %1$s?</string>
+    <string name="renombrar_ayuda">El nombre se aplicará a todas sus intervenciones. Déjalo vacío para volver a la etiqueta original.</string>
+    <string name="renombrar_pista">Nombre del hablante</string>
+
+    <!-- Título de la conversación -->
+    <string name="titulo_dialogo">Nombre de la conversación</string>
+    <string name="titulo_pista">Por ejemplo: Tutoría del TFG</string>
+
+    <!-- Acciones comunes -->
+    <string name="accion_guardar">Guardar</string>
+    <string name="accion_cancelar">Cancelar</string>
+
+    <!-- Próximamente (los análisis con IA están suspendidos; ver api/proximamente.py) -->
+    <string name="proximamente_boton">Próximamente</string>
+    <string name="proximamente_titulo">Próximamente</string>
+    <string name="proximamente_mensaje">De momento Nudo hace una cosa y la hace entera: transcribir y separar a los hablantes, gratis y en tu propio servidor.\n\nEstá en camino:\n\n%1$s</string>
+    <string name="proximamente_cerrar">Entendido</string>
+
+    <string-array name="proximamente_funciones">
+        <item>Resumen — lo esencial en un párrafo</item>
+        <item>Esquema — la conversación como apuntes</item>
+        <item>Notas — temas, decisiones y pendientes</item>
+        <item>Acciones — las tareas que salieron</item>
+        <item>Preguntas — lo respondido y lo que quedó abierto</item>
+        <item>Objetivos — las metas explícitas e implícitas</item>
+    </string-array>
 
     <!-- Avisos -->
     <string name="aviso_sin_conexion">Sin conexión. La grabación queda en el móvil; toca «reintentar» cuando vuelva la red.</string>
     <string name="aviso_lista_sin_conexion">Sin conexión. Mostrando lo último guardado.</string>
-    <string name="aviso_hilado_fallido">No se pudo hilar el análisis. Reintenta en un momento.</string>
+    <string name="aviso_renombrar_fallido">No se pudo guardar el nombre. Reintenta en un momento.</string>
+    <string name="aviso_titulo_fallido">No se pudo guardar el título. Reintenta en un momento.</string>
     <string name="permiso_microfono_denegado">Nudo necesita el micrófono para grabar. Actívalo en Ajustes.</string>
-
-    <!-- Confirmación al hilar (la IA genera bajo demanda; la transcripción y los hablantes ya están) -->
-    <string name="confirmar_hilar_titulo">¿Hilar %1$s?</string>
-    <string name="confirmar_hilar_mensaje">Esta vista se genera con IA solo cuando la pides. La transcripción y los hablantes ya están listos.</string>
-    <string name="confirmar_hilar_si">Hilar</string>
-    <string name="confirmar_hilar_no">Ahora no</string>
 </resources>

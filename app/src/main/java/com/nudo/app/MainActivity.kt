@@ -46,6 +46,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /** Audios que ya están en el móvil: grabadora del sistema, WhatsApp, descargas... */
+    private val elegirAudio = registerForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri -> if (uri != null) viewModel.importarAudio(uri) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -59,6 +64,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.botonGrabar.setOnClickListener { pedirGrabacion() }
         binding.botonParar.setOnClickListener { viewModel.detenerYEnviar() }
+        binding.botonSubir.setOnClickListener { elegirAudio.launch(arrayOf("audio/*")) }
 
         viewModel.estadoGrabacion.observe(this) { estado -> pintarEstado(estado) }
         viewModel.items.observe(this) { items ->
