@@ -3,3 +3,6 @@ local.properties
 build/
 .idea/
 .kotlin/
+
+# APK generado en la raíz para instalar a mano (binario pesado, nunca al repo)
+/*.apk

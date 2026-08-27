@@ -23,7 +23,7 @@ android {
         buildConfigField(
             "String",
             "NUDO_BASE_URL",
-            "\"${propiedadesLocales.getProperty("NUDO_BASE_URL", "http://31.97.152.142")}\"",
+            "\"${propiedadesLocales.getProperty("NUDO_BASE_URL", "https://nudo.finkafest.es")}\"",
         )
         buildConfigField(
             "String",
@@ -39,6 +39,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            // Se firma con la clave de debug para poder instalar el APK a mano
+            // (la app no se distribuye por Play Store). Mantiene la misma firma
+            // que las instalaciones existentes, así se actualiza encima sin
+            // desinstalar. Cambiar a una clave propia antes de publicarla.
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
