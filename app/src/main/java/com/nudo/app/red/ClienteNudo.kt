@@ -56,6 +56,8 @@ data class Trabajo(
 
 object ClienteNudo {
 
+    private val candadoRegistro = Any()
+
     private val cliente = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(180, TimeUnit.SECONDS)
@@ -116,8 +118,23 @@ object ClienteNudo {
         return ejecutar(preparar(peticionBase(ruta, credencial())).build())
     }
 
-    /** El token propio, pidiéndolo al servidor la primera vez. Solo desde hilo de red. */
-    private fun credencial(): String = AlmacenCredencial.token() ?: registrarDispositivo()
+    /**
+     * El token propio, pidiéndolo al servidor la primera vez. Solo desde hilo de red.
+     *
+     * El candado no sobra: al abrir la app salen varias peticiones a la vez
+     * (historial y sondeo, al menos). Sin él, todas veían el almacén vacío a la vez
+     * y cada una daba de alta su propio dispositivo. La primera versión registró
+     * dos con un milisegundo de diferencia.
+     */
+    private fun credencial(): String {
+        AlmacenCredencial.token()?.let { return it }
+        synchronized(candadoRegistro) {
+            // Se vuelve a mirar ya dentro: otra petición pudo registrarlo mientras
+            // esta esperaba en la puerta.
+            AlmacenCredencial.token()?.let { return it }
+            return registrarDispositivo()
+        }
+    }
 
     /**
      * Da de alta esta instalación y guarda su token. La clave de arranque del
