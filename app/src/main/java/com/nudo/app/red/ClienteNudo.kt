@@ -14,6 +14,11 @@ import org.json.JSONObject
 
 private val TIPO_JSON = "application/json; charset=utf-8".toMediaType()
 
+private const val CODIGO_NO_AUTORIZADO = 401
+
+/** El servidor no reconoce la credencial: hay que pedir una nueva. */
+private class CredencialRechazada : IOException("Credencial rechazada")
+
 /** El servidor valida el formato por la extensión del nombre que le mandamos. */
 private val TIPOS_POR_EXTENSION = mapOf(
     "m4a" to "audio/mp4",
@@ -59,18 +64,22 @@ object ClienteNudo {
 
     fun subirAudio(archivo: File): String {
         val tipo = TIPOS_POR_EXTENSION[archivo.extension.lowercase()] ?: "application/octet-stream"
-        val cuerpo = MultipartBody.Builder()
-            .setType(MultipartBody.FORM)
-            .addFormDataPart("audio", archivo.name, archivo.asRequestBody(tipo.toMediaType()))
-            .build()
-        return parsearId(ejecutar(peticionBase("/trabajos").post(cuerpo).build()))
+        return parsearId(
+            autenticada("/trabajos") { peticion ->
+                val cuerpo = MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("audio", archivo.name, archivo.asRequestBody(tipo.toMediaType()))
+                    .build()
+                peticion.post(cuerpo)
+            },
+        )
     }
 
     fun listarTrabajos(): List<TrabajoResumen> =
-        parsearLista(ejecutar(peticionBase("/trabajos").get().build()))
+        parsearLista(autenticada("/trabajos") { it.get() })
 
     fun consultarTrabajo(idTrabajo: String): Trabajo =
-        parsearTrabajo(ejecutar(peticionBase("/trabajos/$idTrabajo").get().build()))
+        parsearTrabajo(autenticada("/trabajos/$idTrabajo") { it.get() })
 
     /**
      * Renombra hablantes de golpe. Poner "Diego" en SPEAKER_00 cambia todas sus
@@ -78,23 +87,61 @@ object ClienteNudo {
      */
     fun renombrarHablantes(idTrabajo: String, nombres: Map<String, String>): Trabajo {
         val cuerpo = JSONObject().put("nombres", JSONObject(nombres.toMap()))
-        val peticion = peticionBase("/trabajos/$idTrabajo/hablantes")
-            .put(cuerpo.toString().toRequestBody(TIPO_JSON))
-            .build()
-        return parsearTrabajo(ejecutar(peticion))
+        return parsearTrabajo(
+            autenticada("/trabajos/$idTrabajo/hablantes") {
+                it.put(cuerpo.toString().toRequestBody(TIPO_JSON))
+            },
+        )
     }
 
     fun cambiarTitulo(idTrabajo: String, titulo: String): String {
         val cuerpo = JSONObject().put("titulo", titulo)
-        val peticion = peticionBase("/trabajos/$idTrabajo/titulo")
-            .put(cuerpo.toString().toRequestBody(TIPO_JSON))
+        val respuesta = autenticada("/trabajos/$idTrabajo/titulo") {
+            it.put(cuerpo.toString().toRequestBody(TIPO_JSON))
+        }
+        return JSONObject(respuesta).getString("titulo")
+    }
+
+    /**
+     * Lanza la petición con la credencial de este dispositivo. Si el servidor la
+     * rechaza, la olvida, pide una nueva y reintenta **una sola vez**: eso cubre
+     * que el token se haya revocado desde otro sitio, sin arriesgar un bucle.
+     */
+    private fun autenticada(ruta: String, preparar: (Request.Builder) -> Request.Builder): String {
+        try {
+            return ejecutar(preparar(peticionBase(ruta, credencial())).build())
+        } catch (rechazo: CredencialRechazada) {
+            AlmacenCredencial.olvidar()
+        }
+        return ejecutar(preparar(peticionBase(ruta, credencial())).build())
+    }
+
+    /** El token propio, pidiéndolo al servidor la primera vez. Solo desde hilo de red. */
+    private fun credencial(): String = AlmacenCredencial.token() ?: registrarDispositivo()
+
+    /**
+     * Da de alta esta instalación y guarda su token. La clave de arranque del
+     * BuildConfig solo sirve para esto: no da acceso a ninguna conversación.
+     */
+    private fun registrarDispositivo(): String {
+        val cuerpo = JSONObject().put("nombre", AlmacenCredencial.nombreDeEsteDispositivo())
+        val peticion = Request.Builder()
+            .url(BuildConfig.NUDO_BASE_URL + "/dispositivos")
+            .header("X-API-Key", BuildConfig.NUDO_CLAVE_ARRANQUE)
+            .post(cuerpo.toString().toRequestBody(TIPO_JSON))
             .build()
-        return JSONObject(ejecutar(peticion)).getString("titulo")
+        val respuesta = JSONObject(ejecutar(peticion))
+        val token = respuesta.getString("token")
+        AlmacenCredencial.guardar(respuesta.getString("id"), token)
+        return token
     }
 
     private fun ejecutar(peticion: Request): String {
         cliente.newCall(peticion).execute().use { respuesta ->
             val texto = respuesta.body?.string().orEmpty()
+            if (respuesta.code == CODIGO_NO_AUTORIZADO) {
+                throw CredencialRechazada()
+            }
             if (!respuesta.isSuccessful) {
                 throw IOException("El servidor respondió ${respuesta.code}: $texto")
             }
@@ -102,10 +149,10 @@ object ClienteNudo {
         }
     }
 
-    private fun peticionBase(ruta: String): Request.Builder =
+    private fun peticionBase(ruta: String, credencial: String): Request.Builder =
         Request.Builder()
             .url(BuildConfig.NUDO_BASE_URL + ruta)
-            .header("X-API-Key", BuildConfig.NUDO_API_KEY)
+            .header("X-API-Key", credencial)
 
     // ---- Parseo (público para poder probarlo sin red) ----
 

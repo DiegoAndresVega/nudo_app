@@ -67,4 +67,12 @@ class ClienteNudoTest {
         assertEquals("error", trabajo.estado)
         assertEquals("fallo de prueba", trabajo.error)
     }
+
+    @Test
+    fun `la respuesta del alta trae id y token`() {
+        val json = """{"id":"d1f2","nombre":"Google Pixel 8","creado":"2026-09-02T10:00:00+00:00","token":"tok-abc"}"""
+        val objeto = org.json.JSONObject(json)
+        assertEquals("d1f2", objeto.getString("id"))
+        assertEquals("tok-abc", objeto.getString("token"))
+    }
 }

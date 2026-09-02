@@ -17,18 +17,24 @@ android {
         applicationId = "com.nudo.app"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1"
+        versionCode = 2
+        versionName = "0.2"
 
         buildConfigField(
             "String",
             "NUDO_BASE_URL",
             "\"${propiedadesLocales.getProperty("NUDO_BASE_URL", "https://nudo.finkafest.es")}\"",
         )
+        // Clave de ARRANQUE, no de acceso: solo sirve para dar de alta este
+        // dispositivo y recibir su token propio. Sigue viajando en el APK, pero
+        // extraerla ya no muestra ninguna conversación: cada una tiene dueño.
         buildConfigField(
             "String",
-            "NUDO_API_KEY",
-            "\"${propiedadesLocales.getProperty("NUDO_API_KEY", "")}\"",
+            "NUDO_CLAVE_ARRANQUE",
+            "\"${propiedadesLocales.getProperty(
+                "NUDO_CLAVE_ARRANQUE",
+                propiedadesLocales.getProperty("NUDO_API_KEY", ""),
+            )}\"",
         )
     }
 

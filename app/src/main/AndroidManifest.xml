@@ -4,8 +4,14 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    <!--
+      allowBackup="false": en las preferencias de la app vive el token de este
+      dispositivo, y con la copia automática activa acabaría saliendo del móvil
+      dentro de un respaldo de Google Drive.
+    -->
     <application
-        android:allowBackup="true"
+        android:name=".NudoApp"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
