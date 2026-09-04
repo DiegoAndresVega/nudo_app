@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.nudo.app.grabacion.GrabadoraAudio
 import com.nudo.app.grabacion.ImportadorAudio
+import com.nudo.app.almacen.CopiaLocal
 import com.nudo.app.pendientes.ColaPendientes
 import com.nudo.app.red.ClienteNudo
 import com.nudo.app.red.TrabajoResumen
@@ -160,16 +161,40 @@ class HistorialViewModel(aplicacion: Application) : AndroidViewModel(aplicacion)
             val remotos = try {
                 ClienteNudo.listarTrabajos().map { ItemHistorial.Remoto(it) }
             } catch (_: Exception) {
-                if (_items.value.orEmpty().any { it is ItemHistorial.Remoto }) {
-                    _aviso.postValue(contexto.getString(R.string.aviso_lista_sin_conexion))
-                    _items.value.orEmpty().filterIsInstance<ItemHistorial.Remoto>()
-                } else {
-                    emptyList()
-                }
+                // Sin red se tira de la copia local, que sobrevive a cerrar la app:
+                // antes solo quedaba lo que hubiera en memoria.
+                _aviso.postValue(contexto.getString(R.string.aviso_lista_sin_conexion))
+                emptyList()
             }
-            _items.postValue(pendientes + remotos)
-            programarSondeo(remotos)
+            val conLasGuardadas = conCopiasLocales(remotos)
+            _items.postValue(pendientes + conLasGuardadas)
+            programarSondeo(conLasGuardadas)
         }
+    }
+
+    /**
+     * Añade las conversaciones que solo están en el móvil, de más reciente a más
+     * antigua.
+     *
+     * Aparecen cuando el servidor ya no las tiene: caducaron a los 90 días (#24),
+     * o se perdió el volumen. Se mezclan sin distinguirlas porque al usuario le da
+     * igual dónde vive cada una — lo que no le da igual es que desaparezcan.
+     */
+    private fun conCopiasLocales(remotos: List<ItemHistorial.Remoto>): List<ItemHistorial.Remoto> {
+        val yaEstan = remotos.map { it.trabajo.id }.toSet()
+        val soloLocales = CopiaLocal.listar()
+            .filter { it.id !in yaEstan }
+            .map {
+                ItemHistorial.Remoto(
+                    TrabajoResumen(
+                        id = it.id,
+                        estado = it.estado,
+                        creado = it.creado.orEmpty(),
+                        titulo = it.titulo,
+                    ),
+                )
+            }
+        return (remotos + soloLocales).sortedByDescending { it.trabajo.creado }
     }
 
     fun consumirAviso() {

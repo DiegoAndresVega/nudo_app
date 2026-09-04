@@ -28,6 +28,9 @@ private class CredencialRechazada : IOException("Credencial rechazada")
  */
 class ConversacionEnProceso : IOException("Hay una conversación procesándose")
 
+/** El servidor no tiene ese recurso. Para borrar no es un fallo: ya no está. */
+private class NoEncontrado : IOException("No encontrado")
+
 /** El servidor valida el formato por la extensión del nombre que le mandamos. */
 private val TIPOS_POR_EXTENSION = mapOf(
     "m4a" to "audio/mp4",
@@ -133,7 +136,12 @@ object ClienteNudo {
      * sea de otro dueño y el servidor conteste 404, que es lo que toca.
      */
     fun borrarTrabajo(idTrabajo: String) {
-        autenticada("/trabajos/$idTrabajo") { it.delete() }
+        try {
+            autenticada("/trabajos/$idTrabajo") { it.delete() }
+        } catch (_: NoEncontrado) {
+            // El servidor ya no la tiene: caducó a los 90 días y solo queda la
+            // copia del móvil. Pedir que se borre algo que no está no es un fallo.
+        }
     }
 
     /**
@@ -227,6 +235,9 @@ object ClienteNudo {
             }
             if (respuesta.code == CODIGO_CONFLICTO) {
                 throw ConversacionEnProceso()
+            }
+            if (respuesta.code == CODIGO_NO_ENCONTRADO) {
+                throw NoEncontrado()
             }
             if (!respuesta.isSuccessful) {
                 throw IOException("El servidor respondió ${respuesta.code}: $texto")

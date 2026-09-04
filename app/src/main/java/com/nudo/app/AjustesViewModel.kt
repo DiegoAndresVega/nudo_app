@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.nudo.app.almacen.CopiaLocal
 import com.nudo.app.red.AlmacenCredencial
 import com.nudo.app.red.ClienteNudo
 import com.nudo.app.red.ConversacionEnProceso
@@ -59,6 +60,9 @@ class AjustesViewModel(aplicacion: Application) : AndroidViewModel(aplicacion) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 ClienteNudo.retirarEsteDispositivo()
+                // La copia local se va con el dispositivo. Dejarla sería guardar
+                // conversaciones de una credencial que ya no existe.
+                CopiaLocal.vaciar()
                 _retirada.postValue(EstadoRetirada.Hecha)
             } catch (_: ConversacionEnProceso) {
                 _retirada.postValue(EstadoRetirada.Fallida(R.string.ajustes_retirada_en_curso))

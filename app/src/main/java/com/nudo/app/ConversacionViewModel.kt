@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.nudo.app.almacen.CopiaLocal
 import com.nudo.app.red.ClienteNudo
 import com.nudo.app.red.ConversacionEnProceso
 import com.nudo.app.red.Trabajo
@@ -41,10 +42,20 @@ class ConversacionViewModel(aplicacion: Application) : AndroidViewModel(aplicaci
                 val trabajo = try {
                     ClienteNudo.consultarTrabajo(id)
                 } catch (_: Exception) {
+                    // Sin red, la copia local es lo único que hay. Si tampoco está,
+                    // se sigue sondeando: puede que la conversación aún no acabara.
+                    val copia = CopiaLocal.cargar(id)
+                    if (copia != null && _detalle.value == null) {
+                        _detalle.postValue(copia)
+                        return@launch
+                    }
                     avisar(R.string.aviso_lista_sin_conexion)
                     delay(INTERVALO_SONDEO_MS)
                     continue
                 }
+                // La transcripción solo vivía en el servidor: si se pierde el
+                // volumen, el audio ya no está y no hay de dónde sacarla (#18).
+                CopiaLocal.guardar(trabajo)
                 _detalle.postValue(trabajo)
                 if (trabajo.estado == "completado" || trabajo.estado == "error") return@launch
                 delay(INTERVALO_SONDEO_MS)
@@ -66,6 +77,7 @@ class ConversacionViewModel(aplicacion: Application) : AndroidViewModel(aplicaci
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 ClienteNudo.borrarTrabajo(id)
+                CopiaLocal.borrar(id)
                 _borrada.postValue(true)
             } catch (_: ConversacionEnProceso) {
                 _borrando.postValue(false)
