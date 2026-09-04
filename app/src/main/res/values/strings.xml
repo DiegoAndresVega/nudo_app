@@ -63,10 +63,37 @@
         <item>Objetivos — las metas explícitas e implícitas</item>
     </string-array>
 
+    <!-- Ajustes -->
+    <string name="ajustes_titulo">Ajustes</string>
+    <string name="desc_ajustes">Abrir ajustes</string>
+    <string name="ajustes_este_dispositivo">Este dispositivo</string>
+    <string name="ajustes_credencial_explicacion">Este móvil tiene su propia credencial en el servidor. Solo él ve sus conversaciones: ningún otro dispositivo puede abrirlas.</string>
+    <string name="ajustes_retirarse_titulo">Retirar este dispositivo</string>
+    <string name="ajustes_retirarse_accion">Retirar este dispositivo</string>
+    <string name="ajustes_retirarse_sin_conversaciones">No tienes ninguna conversación guardada. Al retirarte solo se borra la credencial de este móvil.</string>
+    <string name="ajustes_retirarse_sin_recuento">Se borrarán la credencial de este móvil y todas sus conversaciones. No hay copia en el dispositivo.</string>
+    <string name="ajustes_confirmar_titulo">¿Retirar este dispositivo?</string>
+    <string name="ajustes_confirmar_sin_conversaciones">Se borrará la credencial de este móvil. La próxima vez que abras Nudo empezará de cero.</string>
+    <string name="ajustes_confirmar_sin_recuento">No se ha podido comprobar cuántas conversaciones tienes. Se borrarán todas, y no hay copia en el móvil.</string>
+    <string name="ajustes_confirmar_si">Retirar y borrar</string>
+    <string name="ajustes_retirada_hecha">Dispositivo retirado. Nudo empieza de cero.</string>
+    <string name="ajustes_retirada_en_curso">Hay una conversación transcribiéndose. Espera a que termine y vuelve a intentarlo.</string>
+    <string name="ajustes_retirada_fallida">No se pudo retirar el dispositivo. Reintenta en un momento.</string>
+
     <!-- Avisos -->
     <string name="aviso_sin_conexion">Sin conexión. La grabación queda en el móvil; toca «reintentar» cuando vuelva la red.</string>
     <string name="aviso_lista_sin_conexion">Sin conexión. Mostrando lo último guardado.</string>
     <string name="aviso_renombrar_fallido">No se pudo guardar el nombre. Reintenta en un momento.</string>
     <string name="aviso_titulo_fallido">No se pudo guardar el título. Reintenta en un momento.</string>
     <string name="permiso_microfono_denegado">Nudo necesita el micrófono para grabar. Actívalo en Ajustes.</string>
+    <plurals name="ajustes_retirarse_detalle">
+        <item quantity="one">Se borrará tu conversación junto con la credencial. No hay copia en el móvil.</item>
+        <item quantity="other">Se borrarán tus %1$d conversaciones junto con la credencial. No hay copia en el móvil.</item>
+    </plurals>
+
+    <plurals name="ajustes_confirmar_mensaje">
+        <item quantity="one">Se borrará 1 conversación del servidor y no se puede deshacer: el móvil no guarda copia.</item>
+        <item quantity="other">Se borrarán %1$d conversaciones del servidor y no se puede deshacer: el móvil no guarda copia.</item>
+    </plurals>
+
 </resources>

@@ -65,6 +65,9 @@ class MainActivity : AppCompatActivity() {
         binding.botonGrabar.setOnClickListener { pedirGrabacion() }
         binding.botonParar.setOnClickListener { viewModel.detenerYEnviar() }
         binding.botonSubir.setOnClickListener { elegirAudio.launch(arrayOf("audio/*")) }
+        binding.botonAjustes.setOnClickListener {
+            startActivity(Intent(this, AjustesActivity::class.java))
+        }
 
         viewModel.estadoGrabacion.observe(this) { estado -> pintarEstado(estado) }
         viewModel.items.observe(this) { items ->

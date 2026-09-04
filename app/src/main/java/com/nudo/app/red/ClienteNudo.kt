@@ -15,9 +15,18 @@ import org.json.JSONObject
 private val TIPO_JSON = "application/json; charset=utf-8".toMediaType()
 
 private const val CODIGO_NO_AUTORIZADO = 401
+private const val CODIGO_NO_ENCONTRADO = 404
+private const val CODIGO_CONFLICTO = 409
 
 /** El servidor no reconoce la credencial: hay que pedir una nueva. */
 private class CredencialRechazada : IOException("Credencial rechazada")
+
+/**
+ * No se puede retirar el dispositivo todavía: tiene una conversación a medio
+ * transcribir. Borrarla ahora dejaría al servidor escribiendo en un directorio
+ * que ya no existe, así que el servidor lo impide con un 409.
+ */
+class RetiradaEnEspera : IOException("Hay una conversación procesándose")
 
 /** El servidor valida el formato por la extensión del nombre que le mandamos. */
 private val TIPOS_POR_EXTENSION = mapOf(
@@ -102,6 +111,40 @@ object ClienteNudo {
             it.put(cuerpo.toString().toRequestBody(TIPO_JSON))
         }
         return JSONObject(respuesta).getString("titulo")
+    }
+
+    /**
+     * Retira este dispositivo del servidor: se van su credencial **y todas sus
+     * conversaciones**. La transcripción solo vive allí —el móvil no guarda
+     * copia—, así que esto no se puede deshacer.
+     *
+     * No pasa por [autenticada] a propósito. Ese reintento da de alta un
+     * dispositivo nuevo cuando el servidor rechaza la credencial, que es justo
+     * lo contrario de lo que se pide aquí: registraría de vuelta lo que se
+     * acaba de retirar.
+     *
+     * Un 401 o un 404 no son fallos: significan que esa credencial ya no existe
+     * en el servidor, que es el objetivo. En los dos casos se olvida el token,
+     * y la app volverá a registrarse limpia en el siguiente arranque.
+     */
+    fun retirarEsteDispositivo() {
+        val token = AlmacenCredencial.token()
+        val idDispositivo = AlmacenCredencial.idDispositivo()
+        if (token == null || idDispositivo == null) {
+            AlmacenCredencial.olvidar()
+            return
+        }
+
+        val peticion = peticionBase("/dispositivos/$idDispositivo", token).delete().build()
+        cliente.newCall(peticion).execute().use { respuesta ->
+            if (respuesta.code == CODIGO_CONFLICTO) throw RetiradaEnEspera()
+            val yaNoExiste = respuesta.code == CODIGO_NO_AUTORIZADO ||
+                respuesta.code == CODIGO_NO_ENCONTRADO
+            if (!respuesta.isSuccessful && !yaNoExiste) {
+                throw IOException("El servidor respondió ${respuesta.code}")
+            }
+        }
+        AlmacenCredencial.olvidar()
     }
 
     /**
