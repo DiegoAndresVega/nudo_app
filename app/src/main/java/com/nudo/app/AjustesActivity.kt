@@ -6,8 +6,8 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.nudo.app.databinding.ActivityAjustesBinding
 import com.nudo.app.util.aplicarInsetsDeBarras
 
@@ -75,7 +75,7 @@ class AjustesActivity : AppCompatActivity() {
             cuantas == 0 -> getString(R.string.ajustes_confirmar_sin_conversaciones)
             else -> resources.getQuantityString(R.plurals.ajustes_confirmar_mensaje, cuantas, cuantas)
         }
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.ajustes_confirmar_titulo)
             .setMessage(mensaje)
             .setPositiveButton(R.string.ajustes_confirmar_si) { _, _ -> viewModel.retirarse() }

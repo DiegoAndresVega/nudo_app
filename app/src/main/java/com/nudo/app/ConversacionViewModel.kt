@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.nudo.app.red.ClienteNudo
+import com.nudo.app.red.ConversacionEnProceso
 import com.nudo.app.red.Trabajo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -24,6 +25,12 @@ class ConversacionViewModel(aplicacion: Application) : AndroidViewModel(aplicaci
     private val _aviso = MutableLiveData<String?>()
     val aviso: LiveData<String?> = _aviso
 
+    private val _borrando = MutableLiveData(false)
+    val borrando: LiveData<Boolean> = _borrando
+
+    private val _borrada = MutableLiveData(false)
+    val borrada: LiveData<Boolean> = _borrada
+
     private var idTrabajo: String? = null
 
     fun cargar(id: String) {
@@ -41,6 +48,31 @@ class ConversacionViewModel(aplicacion: Application) : AndroidViewModel(aplicaci
                 _detalle.postValue(trabajo)
                 if (trabajo.estado == "completado" || trabajo.estado == "error") return@launch
                 delay(INTERVALO_SONDEO_MS)
+            }
+        }
+    }
+
+    /**
+     * Borra la conversación entera en el servidor. Al terminar, [borrada] pasa a
+     * `true` y la pantalla se cierra: no queda nada que enseñar.
+     *
+     * Un 409 significa que se está transcribiendo ahora mismo, y eso se dice con
+     * sus palabras en vez de con un «no se pudo» que no explica nada.
+     */
+    fun borrar() {
+        val id = idTrabajo ?: return
+        if (_borrando.value == true) return
+        _borrando.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                ClienteNudo.borrarTrabajo(id)
+                _borrada.postValue(true)
+            } catch (_: ConversacionEnProceso) {
+                _borrando.postValue(false)
+                avisar(R.string.borrar_en_proceso)
+            } catch (_: Exception) {
+                _borrando.postValue(false)
+                avisar(R.string.borrar_fallido)
             }
         }
     }

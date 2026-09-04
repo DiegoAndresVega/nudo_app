@@ -63,6 +63,15 @@
         <item>Objetivos — las metas explícitas e implícitas</item>
     </string-array>
 
+    <!-- Borrar una conversación -->
+    <string name="desc_borrar">Borrar esta conversación</string>
+    <string name="borrar_titulo">¿Borrar esta conversación?</string>
+    <string name="borrar_mensaje">Se borran el audio, la transcripción y los nombres de los hablantes. No se puede deshacer: el móvil no guarda copia.</string>
+    <string name="borrar_confirmar">Borrar</string>
+    <string name="borrar_hecho">Conversación borrada.</string>
+    <string name="borrar_en_proceso">Todavía se está transcribiendo. Espera a que termine y vuelve a intentarlo.</string>
+    <string name="borrar_fallido">No se pudo borrar. Reintenta en un momento.</string>
+
     <!-- Ajustes -->
     <string name="ajustes_titulo">Ajustes</string>
     <string name="desc_ajustes">Abrir ajustes</string>

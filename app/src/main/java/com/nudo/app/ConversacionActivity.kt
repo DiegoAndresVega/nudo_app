@@ -49,6 +49,7 @@ class ConversacionActivity : AppCompatActivity() {
         binding.botonAtras.setOnClickListener { finish() }
         binding.zonaTitulo.setOnClickListener { pedirTitulo() }
         binding.botonProximamente.setOnClickListener { mostrarProximamente() }
+        binding.botonBorrar.setOnClickListener { confirmarBorrado() }
 
         pintarCabecera(intent.getStringExtra(EXTRA_TITULO))
         observar()
@@ -65,6 +66,34 @@ class ConversacionActivity : AppCompatActivity() {
                 viewModel.consumirAviso()
             }
         }
+        viewModel.borrando.observe(this) { borrando ->
+            binding.botonBorrar.isEnabled = !borrando
+        }
+        viewModel.borrada.observe(this) { borrada ->
+            if (borrada) {
+                Toast.makeText(this, R.string.borrar_hecho, Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }
+    }
+
+    // ---- Borrar ----
+
+    /**
+     * Confirmación antes de borrar. Se va todo de golpe —audio, transcripción y
+     * nombres— y no hay copia en el móvil, así que el diálogo lo dice en vez de
+     * limitarse a preguntar si está seguro.
+     *
+     * Al volver, el historial se recarga solo en `onResume`, así que la
+     * conversación desaparece de la lista sin tocarla a mano.
+     */
+    private fun confirmarBorrado() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.borrar_titulo)
+            .setMessage(R.string.borrar_mensaje)
+            .setPositiveButton(R.string.borrar_confirmar) { _, _ -> viewModel.borrar() }
+            .setNegativeButton(R.string.accion_cancelar, null)
+            .show()
     }
 
     private fun pintarTrabajo(trabajo: Trabajo) {

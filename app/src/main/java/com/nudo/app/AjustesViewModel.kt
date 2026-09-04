@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.nudo.app.red.AlmacenCredencial
 import com.nudo.app.red.ClienteNudo
-import com.nudo.app.red.RetiradaEnEspera
+import com.nudo.app.red.ConversacionEnProceso
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -55,7 +55,7 @@ class AjustesViewModel(aplicacion: Application) : AndroidViewModel(aplicacion) {
             try {
                 ClienteNudo.retirarEsteDispositivo()
                 _retirada.postValue(EstadoRetirada.Hecha)
-            } catch (_: RetiradaEnEspera) {
+            } catch (_: ConversacionEnProceso) {
                 _retirada.postValue(EstadoRetirada.Fallida(R.string.ajustes_retirada_en_curso))
             } catch (_: Exception) {
                 _retirada.postValue(EstadoRetirada.Fallida(R.string.ajustes_retirada_fallida))

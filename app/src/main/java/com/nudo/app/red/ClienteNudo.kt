@@ -22,11 +22,11 @@ private const val CODIGO_CONFLICTO = 409
 private class CredencialRechazada : IOException("Credencial rechazada")
 
 /**
- * No se puede retirar el dispositivo todavía: tiene una conversación a medio
- * transcribir. Borrarla ahora dejaría al servidor escribiendo en un directorio
- * que ya no existe, así que el servidor lo impide con un 409.
+ * El servidor devuelve 409: hay una conversación a medio transcribir. Borrarla
+ * ahora lo dejaría escribiendo en un directorio que ya no existe, así que lo
+ * impide — tanto al borrar esa conversación como al retirar el dispositivo.
  */
-class RetiradaEnEspera : IOException("Hay una conversación procesándose")
+class ConversacionEnProceso : IOException("Hay una conversación procesándose")
 
 /** El servidor valida el formato por la extensión del nombre que le mandamos. */
 private val TIPOS_POR_EXTENSION = mapOf(
@@ -114,6 +114,18 @@ object ClienteNudo {
     }
 
     /**
+     * Borra una conversación entera: audio, transcripción y nombres. No se puede
+     * deshacer, y no hay copia en el móvil.
+     *
+     * Va por [autenticada] como el resto: si el token se revocó desde otro sitio,
+     * reintentar con uno nuevo es lo correcto —  aunque entonces la conversación
+     * sea de otro dueño y el servidor conteste 404, que es lo que toca.
+     */
+    fun borrarTrabajo(idTrabajo: String) {
+        autenticada("/trabajos/$idTrabajo") { it.delete() }
+    }
+
+    /**
      * Retira este dispositivo del servidor: se van su credencial **y todas sus
      * conversaciones**. La transcripción solo vive allí —el móvil no guarda
      * copia—, así que esto no se puede deshacer.
@@ -137,7 +149,7 @@ object ClienteNudo {
 
         val peticion = peticionBase("/dispositivos/$idDispositivo", token).delete().build()
         cliente.newCall(peticion).execute().use { respuesta ->
-            if (respuesta.code == CODIGO_CONFLICTO) throw RetiradaEnEspera()
+            if (respuesta.code == CODIGO_CONFLICTO) throw ConversacionEnProceso()
             val yaNoExiste = respuesta.code == CODIGO_NO_AUTORIZADO ||
                 respuesta.code == CODIGO_NO_ENCONTRADO
             if (!respuesta.isSuccessful && !yaNoExiste) {
@@ -201,6 +213,9 @@ object ClienteNudo {
             val texto = respuesta.body?.string().orEmpty()
             if (respuesta.code == CODIGO_NO_AUTORIZADO) {
                 throw CredencialRechazada()
+            }
+            if (respuesta.code == CODIGO_CONFLICTO) {
+                throw ConversacionEnProceso()
             }
             if (!respuesta.isSuccessful) {
                 throw IOException("El servidor respondió ${respuesta.code}: $texto")

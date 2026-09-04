@@ -52,6 +52,14 @@
                 android:textSize="11sp"
                 tools:text="16 jul · 20:14 · toca para renombrar" />
         </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/botonBorrar"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/desc_borrar"
+            android:src="@drawable/ic_borrar" />
     </LinearLayout>
 
     <!-- ============ HABLANTES ============ -->
