@@ -37,6 +37,7 @@ class AjustesActivity : AppCompatActivity() {
             binding.nombreDispositivo.text = nombre
         }
         viewModel.conversaciones.observe(this) { cuantas -> pintarRecuento(cuantas) }
+        viewModel.retencionDias.observe(this) { dias -> pintarRetencion(dias) }
         viewModel.retirada.observe(this) { estado -> pintarRetirada(estado) }
 
         viewModel.cargar()
@@ -47,6 +48,19 @@ class AjustesActivity : AppCompatActivity() {
             cuantas == null -> getString(R.string.ajustes_retirarse_sin_recuento)
             cuantas == 0 -> getString(R.string.ajustes_retirarse_sin_conversaciones)
             else -> resources.getQuantityString(R.plurals.ajustes_retirarse_detalle, cuantas, cuantas)
+        }
+    }
+
+    /**
+     * El plazo de borrado automático. Se enseña siempre, incluso cuando no hay
+     * caducidad: que las conversaciones se guarden para siempre también es una
+     * política, y el usuario tiene que poder saber cuál está vigente.
+     */
+    private fun pintarRetencion(dias: Int?) {
+        binding.detalleRetencion.text = when {
+            dias == null -> getString(R.string.ajustes_retencion_desconocida)
+            dias <= 0 -> getString(R.string.ajustes_retencion_sin_plazo)
+            else -> resources.getQuantityString(R.plurals.ajustes_retencion, dias, dias)
         }
     }
 

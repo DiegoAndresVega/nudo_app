@@ -40,6 +40,15 @@ private val TIPOS_POR_EXTENSION = mapOf(
     "webm" to "audio/webm",
 )
 
+/**
+ * El historial y la política que lo rige. [retencionDias] a 0 significa que no
+ * caduca nada; el servidor lo manda con la lista para que la app pueda decirlo.
+ */
+data class Historial(
+    val trabajos: List<TrabajoResumen>,
+    val retencionDias: Int,
+)
+
 data class TrabajoResumen(
     val id: String,
     val estado: String,
@@ -86,8 +95,10 @@ object ClienteNudo {
         )
     }
 
-    fun listarTrabajos(): List<TrabajoResumen> =
-        parsearLista(autenticada("/trabajos") { it.get() })
+    fun listarTrabajos(): List<TrabajoResumen> = listarHistorial().trabajos
+
+    fun listarHistorial(): Historial =
+        parsearHistorial(autenticada("/trabajos") { it.get() })
 
     fun consultarTrabajo(idTrabajo: String): Trabajo =
         parsearTrabajo(autenticada("/trabajos/$idTrabajo") { it.get() })
@@ -233,9 +244,12 @@ object ClienteNudo {
 
     fun parsearId(json: String): String = JSONObject(json).getString("id")
 
-    fun parsearLista(json: String): List<TrabajoResumen> {
-        val lista = JSONObject(json).getJSONArray("trabajos")
-        return (0 until lista.length()).map { indice ->
+    fun parsearLista(json: String): List<TrabajoResumen> = parsearHistorial(json).trabajos
+
+    fun parsearHistorial(json: String): Historial {
+        val raiz = JSONObject(json)
+        val lista = raiz.getJSONArray("trabajos")
+        val trabajos = (0 until lista.length()).map { indice ->
             val objeto = lista.getJSONObject(indice)
             TrabajoResumen(
                 id = objeto.getString("id"),
@@ -244,6 +258,9 @@ object ClienteNudo {
                 titulo = textoONulo(objeto, "titulo"),
             )
         }
+        // Un servidor viejo no manda el campo. Cero es "no caduca", que es lo que
+        // hacía antes de existir la caducidad: el valor por defecto no miente.
+        return Historial(trabajos, raiz.optInt("retencionDias", 0))
     }
 
     fun parsearTrabajo(json: String): Trabajo {

@@ -77,6 +77,9 @@
     <string name="desc_ajustes">Abrir ajustes</string>
     <string name="ajustes_este_dispositivo">Este dispositivo</string>
     <string name="ajustes_credencial_explicacion">Este móvil tiene su propia credencial en el servidor. Solo él ve sus conversaciones: ningún otro dispositivo puede abrirlas.</string>
+    <string name="ajustes_retencion_titulo">Cuánto se guardan</string>
+    <string name="ajustes_retencion_sin_plazo">Tus conversaciones se guardan en el servidor sin fecha de caducidad. Bórralas desde cada conversación cuando ya no las necesites.</string>
+    <string name="ajustes_retencion_desconocida">No se ha podido consultar cuánto se guardan. Revisa la conexión.</string>
     <string name="ajustes_retirarse_titulo">Retirar este dispositivo</string>
     <string name="ajustes_retirarse_accion">Retirar este dispositivo</string>
     <string name="ajustes_retirarse_sin_conversaciones">No tienes ninguna conversación guardada. Al retirarte solo se borra la credencial de este móvil.</string>
@@ -95,6 +98,11 @@
     <string name="aviso_renombrar_fallido">No se pudo guardar el nombre. Reintenta en un momento.</string>
     <string name="aviso_titulo_fallido">No se pudo guardar el título. Reintenta en un momento.</string>
     <string name="permiso_microfono_denegado">Nudo necesita el micrófono para grabar. Actívalo en Ajustes.</string>
+    <plurals name="ajustes_retencion">
+        <item quantity="one">El servidor borra cada conversación al día de haberla grabado. El audio se borra siempre en cuanto termina la transcripción.</item>
+        <item quantity="other">El servidor borra cada conversación a los %1$d días de haberla grabado. El audio se borra siempre en cuanto termina la transcripción.</item>
+    </plurals>
+
     <plurals name="ajustes_retirarse_detalle">
         <item quantity="one">Se borrará tu conversación junto con la credencial. No hay copia en el móvil.</item>
         <item quantity="other">Se borrarán tus %1$d conversaciones junto con la credencial. No hay copia en el móvil.</item>

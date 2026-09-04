@@ -28,18 +28,23 @@ class AjustesViewModel(aplicacion: Application) : AndroidViewModel(aplicacion) {
     private val _conversaciones = MutableLiveData<Int?>()
     val conversaciones: LiveData<Int?> = _conversaciones
 
+    /** Días que el servidor guarda una conversación. 0 = no caduca. */
+    private val _retencionDias = MutableLiveData<Int?>()
+    val retencionDias: LiveData<Int?> = _retencionDias
+
     private val _retirada = MutableLiveData<EstadoRetirada>(EstadoRetirada.Inactiva)
     val retirada: LiveData<EstadoRetirada> = _retirada
 
     fun cargar() {
         _nombreDispositivo.value = AlmacenCredencial.nombreDeEsteDispositivo()
         viewModelScope.launch(Dispatchers.IO) {
-            val cuantas = try {
-                ClienteNudo.listarTrabajos().size
+            val historial = try {
+                ClienteNudo.listarHistorial()
             } catch (_: Exception) {
                 null
             }
-            _conversaciones.postValue(cuantas)
+            _conversaciones.postValue(historial?.trabajos?.size)
+            _retencionDias.postValue(historial?.retencionDias)
         }
     }
 
