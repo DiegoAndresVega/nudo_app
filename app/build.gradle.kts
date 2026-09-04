@@ -25,16 +25,14 @@ android {
             "NUDO_BASE_URL",
             "\"${propiedadesLocales.getProperty("NUDO_BASE_URL", "https://nudo.finkafest.es")}\"",
         )
-        // Clave de ARRANQUE, no de acceso: solo sirve para dar de alta este
-        // dispositivo y recibir su token propio. Sigue viajando en el APK, pero
-        // extraerla ya no muestra ninguna conversación: cada una tiene dueño.
+        // Clave de ALTA, no de acceso: es el `NUDO_CLAVE_ALTA` del servidor y lo
+        // único que puede es dar de alta este dispositivo para recibir su token.
+        // Sigue viajando en el APK, pero extraerla no muestra ninguna conversación
+        // (cada una tiene dueño) ni deja fuera a nadie (no revoca dispositivos).
         buildConfigField(
             "String",
             "NUDO_CLAVE_ARRANQUE",
-            "\"${propiedadesLocales.getProperty(
-                "NUDO_CLAVE_ARRANQUE",
-                propiedadesLocales.getProperty("NUDO_API_KEY", ""),
-            )}\"",
+            "\"${propiedadesLocales.getProperty("NUDO_CLAVE_ARRANQUE", "")}\"",
         )
     }
 
