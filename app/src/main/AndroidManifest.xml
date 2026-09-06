@@ -5,9 +5,14 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <!--
-      allowBackup="false": en las preferencias de la app vive el token de este
-      dispositivo, y con la copia automática activa acabaría saliendo del móvil
-      dentro de un respaldo de Google Drive.
+      allowBackup="false": en el móvil viven el token de este dispositivo y las
+      conversaciones ya transcritas, y con la copia automática activa acabarían
+      saliendo del móvil dentro de un respaldo de Google Drive.
+
+      Sigue haciendo falta aunque ahora todo eso vaya cifrado contra el Keystore
+      (ver Cofre.kt): la clave no sale del móvil, así que un respaldo restaurado
+      en otro dispositivo sería ilegible. Dejar que se copie sería mandar fuera
+      un dato sensible para nada.
     -->
     <application
         android:name=".NudoApp"

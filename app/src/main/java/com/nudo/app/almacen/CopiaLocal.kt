@@ -21,8 +21,14 @@ import org.json.JSONObject
  * a otras aplicaciones, y con `allowBackup="false"` no sale del móvil en una
  * copia de Drive. Es el mismo trato que la credencial: ver `AlmacenCredencial`.
  *
- * Las funciones con `directorio` explícito existen para poder probarlas sin
- * Android; las de arriba son las que usa la app.
+ * Y va **cifrado** contra el Android Keystore ([CofreKeystore]). Eso es lo que
+ * cubre lo que el sandbox no cubre: un móvil rooteado o una extracción física del
+ * almacenamiento. Pasó a hacer falta cuando el móvil empezó a guardar las
+ * conversaciones y no solo la credencial: la credencial es revocable, una
+ * conversación no (#27).
+ *
+ * Las funciones con `directorio` y `cofre` explícitos existen para poder probarlas
+ * sin Android; las de arriba son las que usa la app.
  */
 object CopiaLocal {
 
@@ -42,11 +48,11 @@ object CopiaLocal {
         directorio = File(contexto.applicationContext.filesDir, CARPETA)
     }
 
-    fun guardar(trabajo: Trabajo) = guardarEn(directorio, trabajo)
+    fun guardar(trabajo: Trabajo) = guardarEn(directorio, trabajo, CofreKeystore)
 
-    fun cargar(idTrabajo: String): Trabajo? = cargarDe(directorio, idTrabajo)
+    fun cargar(idTrabajo: String): Trabajo? = cargarDe(directorio, idTrabajo, CofreKeystore)
 
-    fun listar(): List<Trabajo> = listarDe(directorio)
+    fun listar(): List<Trabajo> = listarDe(directorio, CofreKeystore)
 
     fun borrar(idTrabajo: String) = borrarDe(directorio, idTrabajo)
 
@@ -58,24 +64,24 @@ object CopiaLocal {
      * Guarda una conversación **ya terminada**. Una a medias no tiene nada que
      * conservar, y dejarla haría creer que hay copia de algo que aún no existe.
      */
-    fun guardarEn(carpeta: File, trabajo: Trabajo) {
+    fun guardarEn(carpeta: File, trabajo: Trabajo, cofre: Cofre) {
         if (trabajo.estado != "completado") return
         val fichero = ficheroDe(carpeta, trabajo.id) ?: return
         carpeta.mkdirs()
-        fichero.writeText(aJson(trabajo).toString())
+        fichero.writeText(cofre.cifrar(aJson(trabajo).toString()))
     }
 
-    fun cargarDe(carpeta: File, idTrabajo: String): Trabajo? {
+    fun cargarDe(carpeta: File, idTrabajo: String, cofre: Cofre): Trabajo? {
         val fichero = ficheroDe(carpeta, idTrabajo) ?: return null
         if (!fichero.exists()) return null
-        return leer(fichero)
+        return leer(fichero, cofre)
     }
 
     /** De la más reciente a la más antigua, igual que el listado del servidor. */
-    fun listarDe(carpeta: File): List<Trabajo> =
+    fun listarDe(carpeta: File, cofre: Cofre): List<Trabajo> =
         (carpeta.listFiles()?.toList() ?: emptyList())
             .filter { it.extension == "json" }
-            .mapNotNull { leer(it) }
+            .mapNotNull { leer(it, cofre) }
             .sortedByDescending { it.creado.orEmpty() }
 
     fun borrarDe(carpeta: File, idTrabajo: String) {
@@ -90,10 +96,25 @@ object CopiaLocal {
     private fun ficheroDe(carpeta: File, idTrabajo: String): File? =
         if (ID_VALIDO.matches(idTrabajo)) File(carpeta, "$idTrabajo.json") else null
 
-    /** Un JSON a medias —la batería se agotó al escribir— no puede dejar sin
-     *  historial a todo lo demás: esa conversación se pierde, el resto no. */
-    private fun leer(fichero: File): Trabajo? = try {
-        deJson(JSONObject(fichero.readText()))
+    /**
+     * Un JSON a medias —la batería se agotó al escribir— no puede dejar sin
+     * historial a todo lo demás: esa conversación se pierde, el resto no. Lo
+     * mismo vale para una que ya no se pueda descifrar.
+     *
+     * Si la escribió una versión anterior, que guardaba en claro, se lee y se
+     * reescribe cifrada aquí mismo: si no, solo se cifraría lo nuevo y el
+     * historial de antes se quedaría al descubierto para siempre.
+     */
+    private fun leer(fichero: File, cofre: Cofre): Trabajo? = try {
+        val guardado = fichero.readText()
+        val json = cofre.leerAunqueSeaViejo(guardado)
+        when {
+            json == null -> null
+            else -> {
+                if (!estaCifrado(guardado)) fichero.writeText(cofre.cifrar(json))
+                deJson(JSONObject(json))
+            }
+        }
     } catch (_: Exception) {
         null
     }

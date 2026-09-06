@@ -3,6 +3,10 @@ package com.nudo.app.red
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
+import com.nudo.app.almacen.Cofre
+import com.nudo.app.almacen.CofreKeystore
+import com.nudo.app.almacen.estaCifrado
+import com.nudo.app.almacen.leerAunqueSeaViejo
 
 /**
  * Guarda la credencial propia de esta instalación.
@@ -16,10 +20,10 @@ import android.os.Build
  * leer a otras aplicaciones, y `allowBackup="false"` impide que salga del
  * dispositivo en una copia de Google Drive.
  *
- * No se cifra con el Android Keystore, de momento: eso protegería además frente a
- * un móvil rooteado o a una extracción física. La librería que lo hace fácil
- * (`androidx.security:security-crypto`) está deprecada y solo tiene versiones
- * alpha, así que queda pendiente hacerlo a mano contra el Keystore.
+ * Y va **cifrado** contra el Android Keystore ([CofreKeystore]), que cubre lo que
+ * el sandbox no cubre: un móvil rooteado o una extracción física. Se hace a mano
+ * porque la librería que lo hacía fácil (`androidx.security:security-crypto`)
+ * está deprecada y solo tiene versiones alpha (#27).
  */
 object AlmacenCredencial {
 
@@ -31,21 +35,40 @@ object AlmacenCredencial {
     private const val LONGITUD_MAXIMA_NOMBRE = 60
 
     private lateinit var preferencias: SharedPreferences
+    private val cofre: Cofre = CofreKeystore
 
     fun iniciar(contexto: Context) {
         preferencias = contexto.applicationContext
             .getSharedPreferences(PREFERENCIAS, Context.MODE_PRIVATE)
     }
 
-    fun token(): String? = preferencias.getString(CLAVE_TOKEN, null)
+    fun token(): String? = leer(CLAVE_TOKEN)
 
-    fun idDispositivo(): String? = preferencias.getString(CLAVE_ID, null)
+    fun idDispositivo(): String? = leer(CLAVE_ID)
 
     fun guardar(idDispositivo: String, token: String) {
         preferencias.edit()
-            .putString(CLAVE_ID, idDispositivo)
-            .putString(CLAVE_TOKEN, token)
+            .putString(CLAVE_ID, cofre.cifrar(idDispositivo))
+            .putString(CLAVE_TOKEN, cofre.cifrar(token))
             .apply()
+    }
+
+    /**
+     * Si lo guardó una versión anterior, que escribía en claro, se reescribe
+     * cifrado al leerlo. Así actualizar la app no obliga a darse de alta otra vez
+     * —eso perdería el acceso a las conversaciones del servidor— y el token no se
+     * queda en claro para siempre solo porque ya estuviera escrito.
+     *
+     * `null` si no se puede descifrar: el Keystore perdió la clave. `ClienteNudo`
+     * ya sabe qué hacer con un token ausente, que es pedir uno nuevo.
+     */
+    private fun leer(clave: String): String? {
+        val guardado = preferencias.getString(clave, null) ?: return null
+        val valor = cofre.leerAunqueSeaViejo(guardado) ?: return null
+        if (!estaCifrado(guardado)) {
+            preferencias.edit().putString(clave, cofre.cifrar(valor)).apply()
+        }
+        return valor
     }
 
     /** Tras un 401: el token pudo revocarse desde otro sitio, así que se descarta. */
