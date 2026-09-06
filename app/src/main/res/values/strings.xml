@@ -66,7 +66,7 @@
     <!-- Borrar una conversación -->
     <string name="desc_borrar">Borrar esta conversación</string>
     <string name="borrar_titulo">¿Borrar esta conversación?</string>
-    <string name="borrar_mensaje">Se borran el audio, la transcripción y los nombres de los hablantes. No se puede deshacer: el móvil no guarda copia.</string>
+    <string name="borrar_mensaje">Se borran el audio, la transcripción y los nombres de los hablantes, aquí y en el servidor. No se puede deshacer.</string>
     <string name="borrar_confirmar">Borrar</string>
     <string name="borrar_hecho">Conversación borrada.</string>
     <string name="borrar_en_proceso">Todavía se está transcribiendo. Espera a que termine y vuelve a intentarlo.</string>
@@ -82,11 +82,11 @@
     <string name="ajustes_retencion_desconocida">No se ha podido consultar cuánto se guardan. Revisa la conexión.</string>
     <string name="ajustes_retirarse_titulo">Retirar este dispositivo</string>
     <string name="ajustes_retirarse_accion">Retirar este dispositivo</string>
-    <string name="ajustes_retirarse_sin_conversaciones">No tienes ninguna conversación guardada. Al retirarte solo se borra la credencial de este móvil.</string>
-    <string name="ajustes_retirarse_sin_recuento">Se borrarán la credencial de este móvil y todas sus conversaciones. No hay copia en el dispositivo.</string>
+    <string name="ajustes_retirarse_sin_conversaciones">El servidor no tiene ninguna conversación tuya. Al retirarte se borran la credencial y lo que quede guardado en el móvil.</string>
+    <string name="ajustes_retirarse_sin_recuento">Se borrarán la credencial de este móvil y todas sus conversaciones, aquí y en el servidor.</string>
     <string name="ajustes_confirmar_titulo">¿Retirar este dispositivo?</string>
-    <string name="ajustes_confirmar_sin_conversaciones">Se borrará la credencial de este móvil. La próxima vez que abras Nudo empezará de cero.</string>
-    <string name="ajustes_confirmar_sin_recuento">No se ha podido comprobar cuántas conversaciones tienes. Se borrarán todas, y no hay copia en el móvil.</string>
+    <string name="ajustes_confirmar_sin_conversaciones">Se borrarán la credencial de este móvil y lo que quede guardado aquí. La próxima vez que abras Nudo empezará de cero.</string>
+    <string name="ajustes_confirmar_sin_recuento">No se ha podido comprobar cuántas conversaciones tienes. Se borrarán todas, aquí y en el servidor.</string>
     <string name="ajustes_confirmar_si">Retirar y borrar</string>
     <string name="ajustes_retirada_hecha">Dispositivo retirado. Nudo empieza de cero.</string>
     <string name="ajustes_retirada_en_curso">Hay una conversación transcribiéndose. Espera a que termine y vuelve a intentarlo.</string>
@@ -104,13 +104,13 @@
     </plurals>
 
     <plurals name="ajustes_retirarse_detalle">
-        <item quantity="one">Se borrará tu conversación junto con la credencial. No hay copia en el móvil.</item>
-        <item quantity="other">Se borrarán tus %1$d conversaciones junto con la credencial. No hay copia en el móvil.</item>
+        <item quantity="one">Se borrará tu conversación junto con la credencial, aquí y en el servidor.</item>
+        <item quantity="other">Se borrarán tus %1$d conversaciones junto con la credencial, aquí y en el servidor.</item>
     </plurals>
 
     <plurals name="ajustes_confirmar_mensaje">
-        <item quantity="one">Se borrará 1 conversación del servidor y no se puede deshacer: el móvil no guarda copia.</item>
-        <item quantity="other">Se borrarán %1$d conversaciones del servidor y no se puede deshacer: el móvil no guarda copia.</item>
+        <item quantity="one">Se borrará 1 conversación, aquí y en el servidor, y no se puede deshacer.</item>
+        <item quantity="other">Se borrarán %1$d conversaciones, aquí y en el servidor, y no se puede deshacer.</item>
     </plurals>
 
 </resources>

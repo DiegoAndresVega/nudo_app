@@ -50,9 +50,10 @@ class AjustesViewModel(aplicacion: Application) : AndroidViewModel(aplicacion) {
     }
 
     /**
-     * Retira el dispositivo. El servidor borra con él sus conversaciones: como el
-     * móvil no guarda copia, dejarlas allí sin credencial que las alcance las
-     * convertiría en algo que ya nadie puede ni ver ni borrar.
+     * Retira el dispositivo. Se borran las dos copias: el servidor se lleva las
+     * suyas al revocar la credencial —dejarlas allí sin credencial que las
+     * alcance las convertiría en algo que nadie puede ya ver ni borrar— y el
+     * móvil vacía la suya.
      */
     fun retirarse() {
         if (_retirada.value == EstadoRetirada.EnCurso) return
