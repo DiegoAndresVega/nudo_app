@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.nudo.app.grabacion.GrabadoraAudio
 import com.nudo.app.grabacion.ImportadorAudio
 import com.nudo.app.almacen.CopiaLocal
+import com.nudo.app.almacen.RellenoCopias
 import com.nudo.app.pendientes.ColaPendientes
 import com.nudo.app.red.ClienteNudo
 import com.nudo.app.red.TrabajoResumen
@@ -51,6 +52,7 @@ class HistorialViewModel(aplicacion: Application) : AndroidViewModel(aplicacion)
     private var archivoActual: File? = null
     private var trabajoGrabacion: Job? = null
     private var trabajoSondeo: Job? = null
+    private var trabajoRelleno: Job? = null
 
     init {
         cargarHistorial(reintentarPendientes = true)
@@ -169,6 +171,7 @@ class HistorialViewModel(aplicacion: Application) : AndroidViewModel(aplicacion)
             val conLasGuardadas = conCopiasLocales(remotos)
             _items.postValue(pendientes + conLasGuardadas)
             programarSondeo(conLasGuardadas)
+            rellenarCopias(remotos)
         }
     }
 
@@ -199,6 +202,29 @@ class HistorialViewModel(aplicacion: Application) : AndroidViewModel(aplicacion)
 
     fun consumirAviso() {
         _aviso.value = null
+    }
+
+    /**
+     * Completa la copia local con lo que aún no esté en el móvil (#29).
+     *
+     * Va **después** de pintar la lista y en su propia corrutina: rellenar antes
+     * convertiría una mejora de durabilidad en una pantalla lenta, y el usuario
+     * pagaría con espera algo que no ha pedido y no ve.
+     *
+     * Si ya hay un relleno en marcha no se lanza otro: el historial se recarga al
+     * volver a la pantalla y al sondear, y dos rellenos a la vez son justo las
+     * peticiones en paralelo que se quieren evitar.
+     */
+    private fun rellenarCopias(remotos: List<ItemHistorial.Remoto>) {
+        if (remotos.isEmpty() || trabajoRelleno?.isActive == true) return
+        trabajoRelleno = viewModelScope.launch(Dispatchers.IO) {
+            RellenoCopias.rellenar(
+                resumenes = remotos.map { it.trabajo },
+                yaCopiadas = CopiaLocal.listar().map { it.id }.toSet(),
+                traer = { ClienteNudo.consultarTrabajo(it) },
+                guardar = { CopiaLocal.guardar(it) },
+            )
+        }
     }
 
     private fun programarSondeo(remotos: List<ItemHistorial.Remoto>) {
