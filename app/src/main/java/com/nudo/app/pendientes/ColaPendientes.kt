@@ -17,8 +17,13 @@ object ColaPendientes {
 
     const val EXTENSION_GRABACION = "m4a"
 
-    /** Las mismas que acepta la API (ver api/config.py: EXTENSIONES_PERMITIDAS). */
-    val EXTENSIONES_ACEPTADAS = setOf("m4a", "mp3", "wav", "ogg", "opus", "aac", "flac", "webm")
+    /**
+     * Las mismas que acepta la API (ver api/formatos.py: EXTENSIONES_PERMITIDAS).
+     *
+     * En #30 salieron wav, flac y webm: no los graba ni esta app ni la grabadora del
+     * sistema, y cada uno era un demuxer más que el servidor tenía que abrir.
+     */
+    val EXTENSIONES_ACEPTADAS = setOf("m4a", "mp3", "aac", "ogg", "opus")
 
     fun carpeta(contexto: Context): File =
         File(contexto.filesDir, CARPETA).apply { mkdirs() }

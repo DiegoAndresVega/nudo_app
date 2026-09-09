@@ -24,7 +24,7 @@
     <string name="subiendo_subtitulo">Subiendo el audio a tu servidor.</string>
     <string name="error_grabacion">No se pudo grabar: %1$s</string>
     <string name="error_importar">No se pudo leer el audio: %1$s</string>
-    <string name="error_formato">Nudo no entiende los archivos «%1$s». Prueba con mp3, m4a, wav, ogg, opus, aac, flac o webm.</string>
+    <string name="error_formato">Nudo no entiende los archivos «%1$s». Prueba con m4a, mp3, aac, ogg u opus.</string>
 
     <!-- Detalle -->
     <string name="desc_atras">Volver al historial</string>

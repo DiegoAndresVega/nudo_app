@@ -1,6 +1,7 @@
 package com.nudo.app
 
 import com.nudo.app.grabacion.ImportadorAudio
+import com.nudo.app.pendientes.ColaPendientes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
@@ -19,6 +20,24 @@ class ImportadorAudioTest {
         assertEquals("m4a", ImportadorAudio.normalizarExtension("mp4"))
         assertEquals("m4a", ImportadorAudio.normalizarExtension("3gp"))
         assertEquals("ogg", ImportadorAudio.normalizarExtension("oga"))
+    }
+
+    @Test
+    fun `la lista es exactamente la que acepta la API`() {
+        assertEquals(
+            setOf("m4a", "mp3", "aac", "ogg", "opus"),
+            ColaPendientes.EXTENSIONES_ACEPTADAS,
+        )
+    }
+
+    @Test
+    fun `los formatos retirados ya no se aceptan`() {
+        listOf("wav", "flac", "webm").forEach { extension ->
+            val error = assertThrows(ImportadorAudio.FormatoNoSoportado::class.java) {
+                ImportadorAudio.normalizarExtension(extension)
+            }
+            assertEquals(extension, error.extension)
+        }
     }
 
     @Test

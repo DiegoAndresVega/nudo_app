@@ -35,12 +35,9 @@ private class NoEncontrado : IOException("No encontrado")
 private val TIPOS_POR_EXTENSION = mapOf(
     "m4a" to "audio/mp4",
     "mp3" to "audio/mpeg",
-    "wav" to "audio/wav",
+    "aac" to "audio/aac",
     "ogg" to "audio/ogg",
     "opus" to "audio/opus",
-    "aac" to "audio/aac",
-    "flac" to "audio/flac",
-    "webm" to "audio/webm",
 )
 
 /**
